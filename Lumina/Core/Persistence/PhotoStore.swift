@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import os
 
 /// File-based storage for Story photo attachments.
 ///
@@ -39,34 +40,41 @@ enum PhotoStore {
     /// on `Story.photoFilename`.
     @discardableResult
     static func save(_ image: UIImage) throws -> String {
-        // Downscale oversized images so a single story doesn't bloat the
-        // store; 2048px long edge is plenty for full-screen iPad display.
+        Logger.photos.info("Saving photo — original size: \(Int(image.size.width))x\(Int(image.size.height))")
         let scaled = image.downscaled(maxDimension: 2048)
+        Logger.photos.debug("After downscale: \(Int(scaled.size.width))x\(Int(scaled.size.height))")
         guard let data = scaled.jpegData(compressionQuality: 0.85) else {
+            Logger.photos.error("JPEG encoding failed")
             throw Error.encodingFailed
         }
         let filename = "\(UUID().uuidString).jpg"
         let url = try photosDirectory().appendingPathComponent(filename)
         try data.write(to: url, options: .atomic)
+        Logger.photos.info("Photo saved: \(filename) (\(data.count) bytes)")
         return filename
     }
 
-    /// Loads a previously-saved photo by filename. Returns `nil` if the
-    /// file is missing (e.g. the sandbox was rebuilt and the photo was
-    /// never restored).
     static func loadImage(filename: String) -> UIImage? {
-        guard let dir = try? photosDirectory() else { return nil }
+        Logger.photos.debug("Loading photo: \(filename)")
+        guard let dir = try? photosDirectory() else {
+            Logger.photos.error("Cannot access photos directory")
+            return nil
+        }
         let url = dir.appendingPathComponent(filename)
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let data = try? Data(contentsOf: url) else {
+            Logger.photos.warning("Photo not found on disk: \(filename)")
+            return nil
+        }
+        Logger.photos.info("Photo loaded: \(filename) (\(data.count) bytes)")
         return UIImage(data: data)
     }
 
-    /// Deletes a previously-saved photo. Silently ignores missing files
-    /// since the caller's intent is "make it gone".
     static func delete(filename: String) {
+        Logger.photos.info("Deleting photo: \(filename)")
         guard let dir = try? photosDirectory() else { return }
         let url = dir.appendingPathComponent(filename)
         try? FileManager.default.removeItem(at: url)
+        Logger.photos.debug("Photo deleted (or already missing): \(filename)")
     }
 }
 

@@ -1,36 +1,35 @@
 import Foundation
 import FoundationModels
+import os
 
 /// Conversational wrapper around Foundation Models for the Lumina Buddy
 /// chat tab.
-///
-/// Unlike ``FoundationModelsInsightsProvider`` — which generates a
-/// one-shot structured result — this service holds a persistent
-/// `LanguageModelSession` so the model remembers the conversation and
-/// can reference earlier turns naturally.
-///
-/// The session is seeded with (a) the Lumina coach persona and
-/// (b) the user's top and bottom strengths, so the buddy can speak in
-/// the user's specific language without having to be reminded each turn.
 @MainActor
 final class LuminaBuddyChatService {
     private var session: LanguageModelSession?
     private let model: SystemLanguageModel
+    private var turnCount: Int = 0
 
     init(model: SystemLanguageModel = .default) {
         self.model = model
+        Logger.buddy.info("LuminaBuddyChatService initialized")
+        Logger.buddy.debug("Model availability: \(String(describing: model.availability))")
     }
 
-    /// Whether the underlying on-device model is available right now.
     var isAvailable: Bool {
-        if case .available = model.availability { return true }
+        let available = model.availability
+        if case .available = available {
+            Logger.buddy.debug("Buddy availability check: AVAILABLE")
+            return true
+        }
+        Logger.buddy.info("Buddy availability check: NOT AVAILABLE (\(String(describing: available)))")
         return false
     }
 
-    /// Starts a brand-new session with the user's current strength context.
-    /// Call after a new test result is saved to make the buddy aware of
-    /// the latest ranking.
     func startSession(with snapshot: TestSnapshot?) {
+        Logger.buddy.info("=== BUDDY SESSION START ===")
+        turnCount = 0
+
         let contextLine: String
         if let snapshot, !snapshot.rankedEntries.isEmpty {
             let top = snapshot.top(5)
@@ -44,8 +43,11 @@ final class LuminaBuddyChatService {
             Fortalezas principales: \(top).
             Áreas de crecimiento: \(bottom).
             """
+            Logger.buddy.info("Session seeded with user strengths — top: \(top)")
+            Logger.buddy.debug("Growth areas: \(bottom)")
         } else {
             contextLine = "El usuario aún no ha completado el test."
+            Logger.buddy.info("Session started WITHOUT test results (user hasn't completed quiz)")
         }
 
         let instructions = Instructions("""
@@ -60,28 +62,53 @@ final class LuminaBuddyChatService {
         """)
 
         session = LanguageModelSession(model: model, instructions: instructions)
+        Logger.buddy.info("LanguageModelSession created successfully")
+        Logger.buddy.debug("Instructions length: \(String(describing: instructions).count) chars")
     }
 
-    /// Streams a response to `prompt`, yielding progressively longer
-    /// accumulated strings as the model generates tokens.
-    ///
-    /// The view observes this stream and re-renders the last bubble on
-    /// each update. Throws if the session hasn't been started or the
-    /// model errors out.
     func streamResponse(to prompt: String) -> AsyncThrowingStream<String, Swift.Error> {
-        AsyncThrowingStream { continuation in
+        turnCount += 1
+        let currentTurn = turnCount
+        Logger.buddy.info("=== BUDDY STREAM START (turn \(currentTurn)) ===")
+        Logger.buddy.debug("User prompt (\(prompt.count) chars): \(prompt)")
+
+        return AsyncThrowingStream { continuation in
             Task { @MainActor in
                 guard let session else {
+                    Logger.buddy.error("STREAM FAILED: no session — call startSession() first")
                     continuation.finish(throwing: BuddyError.noSession)
                     return
                 }
+
+                let startTime = CFAbsoluteTimeGetCurrent()
+                var tokenCount = 0
+                var lastContent = ""
+
                 do {
+                    Logger.buddy.debug("Calling session.streamResponse(to:)...")
                     let stream = session.streamResponse(to: prompt)
                     for try await partial in stream {
+                        tokenCount += 1
+                        lastContent = partial.content
                         continuation.yield(partial.content)
+                        if tokenCount == 1 {
+                            let ttft = CFAbsoluteTimeGetCurrent() - startTime
+                            Logger.buddy.info("First token received after \(ttft, format: .fixed(precision: 2)) seconds")
+                        }
+                        if tokenCount % 20 == 0 {
+                            Logger.buddy.debug("Streaming... \(tokenCount) chunks, \(lastContent.count) chars so far")
+                        }
                     }
+                    let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+                    Logger.buddy.info("=== BUDDY STREAM COMPLETE (turn \(currentTurn)) ===")
+                    Logger.buddy.info("Total: \(tokenCount) chunks, \(lastContent.count) chars, \(elapsed, format: .fixed(precision: 2)) seconds")
+                    Logger.buddy.debug("Response preview: \(String(lastContent.prefix(120)))...")
                     continuation.finish()
                 } catch {
+                    let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+                    Logger.buddy.error("=== BUDDY STREAM FAILED (turn \(currentTurn), \(elapsed, format: .fixed(precision: 2)) seconds) ===")
+                    Logger.buddy.error("Error: \(error.localizedDescription)")
+                    Logger.buddy.error("Tokens received before failure: \(tokenCount)")
                     continuation.finish(throwing: error)
                 }
             }

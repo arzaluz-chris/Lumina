@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 /// The app's root view. Gates first-launch onboarding and hosts the
 /// four main tabs (Test, Mis 24, Historias, Buddy).
@@ -17,6 +18,7 @@ struct RootView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             TestTabView(onQuizComplete: {
+                Logger.app.info("Quiz complete → switching to Results tab")
                 selectedTab = .results
             })
             .tabItem {
@@ -48,8 +50,15 @@ struct RootView: View {
             set: { if !$0 { hasCompletedOnboarding = true } }
         )) {
             WelcomeView {
+                Logger.app.info("Onboarding completed — user tapped Empezar")
                 hasCompletedOnboarding = true
             }
+        }
+        .onChange(of: selectedTab) { old, new in
+            Logger.app.info("Tab changed: \(String(describing: old)) → \(String(describing: new))")
+        }
+        .onAppear {
+            Logger.app.info("RootView appeared — onboarding completed: \(hasCompletedOnboarding)")
         }
     }
 }

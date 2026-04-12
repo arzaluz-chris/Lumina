@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 /// Orchestrates one complete test run: shows the current question,
 /// records answers, persists a `TestResult` on completion, and hands
@@ -67,19 +68,22 @@ struct QuizFlowView: View {
     }
 
     private func save() {
+        Logger.quiz.info("=== SAVING TEST RESULT ===")
         let result = TestResult()
-        for (strengthID, points) in state.computeScores() {
+        let allScores = state.computeScores()
+        for (strengthID, points) in allScores {
             let score = StrengthScore(strengthID: strengthID, points: points)
             result.scores.append(score)
         }
+        Logger.quiz.info("TestResult created with \(result.scores.count) scores")
         modelContext.insert(result)
         do {
             try modelContext.save()
+            Logger.quiz.info("TestResult saved to SwiftData successfully (id: \(result.id))")
         } catch {
-            // Saving should be safe; if it isn't, we still surface the
-            // completion so the user isn't trapped on the last question.
-            assertionFailure("Failed to save TestResult: \(error)")
+            Logger.quiz.error("FAILED to save TestResult: \(error.localizedDescription)")
         }
+        Logger.quiz.info("Calling onComplete callback → navigating to Results")
         onComplete(result)
     }
 }

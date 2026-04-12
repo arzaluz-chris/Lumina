@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 /// AI-generated personalized analysis of a `TestResult`.
 ///
@@ -197,32 +198,65 @@ struct InsightsView: View {
     // MARK: - Actions
 
     private func loadCached() {
-        guard loadedInsight == nil, let cached = result.insight else { return }
-        loadedInsight = try? JSONDecoder().decode(StrengthInsight.self, from: cached.summaryJSON)
+        Logger.insights.info("loadCached() — checking for existing insight...")
+        guard loadedInsight == nil, let cached = result.insight else {
+            Logger.insights.debug("loadCached() — \(loadedInsight != nil ? "already loaded" : "no cached insight found")")
+            return
+        }
+        Logger.insights.info("Found cached insight (generated: \(cached.generatedAt.formatted()), \(cached.summaryJSON.count) bytes)")
+        if let decoded = try? JSONDecoder().decode(StrengthInsight.self, from: cached.summaryJSON) {
+            loadedInsight = decoded
+            Logger.insights.info("Cached insight decoded successfully")
+            Logger.insights.debug("Summary preview: \(String(decoded.summary.prefix(80)))...")
+        } else {
+            Logger.insights.error("Failed to decode cached insight JSON")
+        }
     }
 
     private func generate(force: Bool) async {
-        if !force, loadedInsight != nil { return }
+        if !force, loadedInsight != nil {
+            Logger.insights.debug("generate() skipped — already loaded and force=false")
+            return
+        }
+        Logger.insights.info("=== INSIGHTS GENERATION START (force: \(force)) ===")
+        Logger.insights.info("Provider type: \(type(of: provider))")
+        Logger.insights.info("Provider available: \(provider.isAvailable)")
+
         error = nil
         isGenerating = true
         defer { isGenerating = false }
 
         let snapshot = result.snapshot()
+        Logger.insights.debug("Snapshot created with \(snapshot.rankedEntries.count) entries")
+
+        let startTime = CFAbsoluteTimeGetCurrent()
         do {
             let generated = try await provider.generateInsight(for: snapshot)
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            Logger.insights.info("Insight generated in \(elapsed, format: .fixed(precision: 2)) seconds")
+
             let data = try JSONEncoder().encode(generated)
+            Logger.insights.debug("Encoded to \(data.count) bytes JSON")
+
             if let existing = result.insight {
                 existing.summaryJSON = data
                 existing.generatedAt = Date()
+                Logger.insights.info("Updated existing AIInsight cache")
             } else {
                 let insight = AIInsight(summaryJSON: data)
                 insight.testResult = result
                 result.insight = insight
                 modelContext.insert(insight)
+                Logger.insights.info("Created new AIInsight and inserted into modelContext")
             }
             try? modelContext.save()
+            Logger.insights.info("modelContext saved")
             loadedInsight = generated
+            Logger.insights.info("=== INSIGHTS GENERATION COMPLETE ===")
         } catch {
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            Logger.insights.error("=== INSIGHTS GENERATION FAILED (\(elapsed, format: .fixed(precision: 2)) seconds) ===")
+            Logger.insights.error("Error: \(error.localizedDescription)")
             self.error = error.localizedDescription
         }
     }

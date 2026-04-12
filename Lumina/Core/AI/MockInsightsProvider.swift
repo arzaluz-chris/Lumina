@@ -1,21 +1,16 @@
 import Foundation
+import os
 
 /// Deterministic stand-in for ``FoundationModelsInsightsProvider``.
-///
-/// Used by SwiftUI previews and unit tests so they render the same
-/// content on every run without needing Apple Intelligence available
-/// on the host device. Returns a fixed `StrengthInsight` that exercises
-/// every section (signature strengths, growth areas, summary,
-/// encouragement) with realistic Spanish copy.
 struct MockInsightsProvider: AIInsightsProviding {
     var isAvailable: Bool { true }
     var unavailableReason: String? { nil }
 
     func generateInsight(for snapshot: TestSnapshot) async throws -> StrengthInsight {
-        // Small artificial delay so preview UIs can exercise their
-        // loading state. 300 ms feels like "something happened" without
-        // being annoying in previews.
+        Logger.ai.info("[MOCK] generateInsight called — returning canned data after 300ms delay")
+        Logger.ai.debug("[MOCK] Snapshot top 5: \(snapshot.top(5).map(\.strengthName).joined(separator: ", "))")
         try? await Task.sleep(for: .milliseconds(300))
+        Logger.ai.info("[MOCK] generateInsight complete")
 
         return StrengthInsight(
             summary: "Tu perfil refleja a alguien que combina una mirada curiosa con una profunda calidez humana. Usas el aprendizaje como motor y la gratitud como brújula.",

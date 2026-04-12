@@ -1,12 +1,9 @@
 import Foundation
 import Observation
 import FoundationModels
+import os
 
 /// Chat-tab view state backed by `LuminaBuddyChatService`.
-///
-/// Owns the message list, the input draft, and the "thinking" flag.
-/// Starts a fresh session with the user's current strength snapshot on
-/// first load so the buddy always has context.
 @MainActor
 @Observable
 final class BuddyChatState {
@@ -17,41 +14,48 @@ final class BuddyChatState {
 
     private let service: LuminaBuddyChatService
     private var hasStarted: Bool = false
+    private var messageCount: Int = 0
 
     init() {
         self.service = LuminaBuddyChatService()
+        Logger.buddy.info("BuddyChatState initialized (default service)")
     }
 
     init(service: LuminaBuddyChatService) {
         self.service = service
+        Logger.buddy.info("BuddyChatState initialized (injected service)")
     }
 
-    /// True when the underlying model is usable on this device.
     var isAvailable: Bool { service.isAvailable }
 
-    /// Seeds a new session with the user's strength snapshot. Safe to
-    /// call repeatedly — subsequent calls are no-ops unless `force` is
-    /// set (e.g. after a new test result is saved).
     func start(with snapshot: TestSnapshot?, force: Bool = false) {
-        guard force || !hasStarted else { return }
+        if !force && hasStarted {
+            Logger.buddy.debug("start() skipped — already started (force=false)")
+            return
+        }
+        Logger.buddy.info("BuddyChatState.start(force: \(force), hasSnapshot: \(snapshot != nil))")
         service.startSession(with: snapshot)
         hasStarted = true
+        messageCount = 0
         messages.removeAll()
-        messages.append(
-            BuddyChatMessage(
-                role: .assistant,
-                content: snapshot == nil
-                    ? "Hola, soy Lumina Buddy. ¿En qué te ayudo hoy?"
-                    : "Hola, soy Lumina Buddy. Ya conozco tus fortalezas — pregúntame lo que quieras sobre ellas."
-            )
-        )
+        let greeting = snapshot == nil
+            ? "Hola, soy Lumina Buddy. ¿En qué te ayudo hoy?"
+            : "Hola, soy Lumina Buddy. Ya conozco tus fortalezas — pregúntame lo que quieras sobre ellas."
+        messages.append(BuddyChatMessage(role: .assistant, content: greeting))
+        Logger.buddy.info("Chat session started, greeting appended")
     }
 
-    /// Sends the current draft to the model and streams the reply into
-    /// a new assistant message. Clears the draft before awaiting.
     func send() async {
         let prompt = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !prompt.isEmpty, !isThinking else { return }
+        guard !prompt.isEmpty, !isThinking else {
+            Logger.buddy.debug("send() skipped — empty prompt or already thinking")
+            return
+        }
+        messageCount += 1
+        let msgNum = messageCount
+        Logger.buddy.info("=== USER MESSAGE #\(msgNum) ===")
+        Logger.buddy.debug("Prompt (\(prompt.count) chars): \(prompt)")
+
         input = ""
         errorMessage = nil
 
@@ -63,9 +67,13 @@ final class BuddyChatState {
         isThinking = true
         defer { isThinking = false }
 
+        let startTime = CFAbsoluteTimeGetCurrent()
         do {
+            Logger.buddy.debug("Starting stream for message #\(msgNum)...")
             let stream = service.streamResponse(to: prompt)
+            var chunkCount = 0
             for try await partial in stream {
+                chunkCount += 1
                 if messages.indices.contains(assistantIndex) {
                     messages[assistantIndex].content = partial
                 }
@@ -73,7 +81,15 @@ final class BuddyChatState {
             if messages.indices.contains(assistantIndex) {
                 messages[assistantIndex].isStreaming = false
             }
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            let finalLength = messages[assistantIndex].content.count
+            Logger.buddy.info("=== ASSISTANT REPLY #\(msgNum) COMPLETE ===")
+            Logger.buddy.info("Chunks: \(chunkCount), chars: \(finalLength), time: \(elapsed, format: .fixed(precision: 2)) sec")
+            Logger.buddy.debug("Reply preview: \(String(self.messages[assistantIndex].content.prefix(100)))...")
         } catch {
+            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
+            Logger.buddy.error("=== ASSISTANT REPLY #\(msgNum) FAILED (\(elapsed, format: .fixed(precision: 2)) sec) ===")
+            Logger.buddy.error("Error: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
             if messages.indices.contains(assistantIndex) {
                 messages[assistantIndex].content = "No pude generar una respuesta. Inténtalo de nuevo."

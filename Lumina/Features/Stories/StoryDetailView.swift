@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import os
 
 /// Read-only detail view for a single story. Supports deleting the
 /// story from the nav bar.
@@ -79,11 +80,14 @@ struct StoryDetailView: View {
     }
 
     private func delete() {
+        Logger.stories.info("=== DELETING STORY (id: \(story.id)) ===")
         if let filename = story.photoFilename {
+            Logger.stories.debug("Deleting attached photo: \(filename)")
             PhotoStore.delete(filename: filename)
         }
         modelContext.delete(story)
         try? modelContext.save()
+        Logger.stories.info("Story deleted from SwiftData")
         dismiss()
     }
 }
