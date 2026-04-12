@@ -6,12 +6,19 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct LuminaApp: App {
+    /// Shared SwiftData container. Built once at app launch and injected
+    /// into every view via `.modelContainer(_:)`.
+    private let container: ModelContainer = .luminaContainer()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
+                .environment(\.aiInsightsProvider, FoundationModelsInsightsProvider())
         }
+        .modelContainer(container)
     }
 }
