@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// A VIA Character Strength.
 ///
@@ -15,4 +16,10 @@ struct Strength: Identifiable, Hashable, Sendable {
 
     /// SF Symbol system name rendered in list rows and detail headers.
     let iconSF: String
+
+    /// The VIA virtue category color for this strength.
+    var categoryColor: Color { Theme.categoryColor(for: id) }
+
+    /// The VIA virtue category for this strength.
+    var virtueCategory: Theme.VirtueCategory { Theme.virtueCategory(for: id) }
 }

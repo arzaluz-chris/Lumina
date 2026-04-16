@@ -10,6 +10,8 @@ extension ModelContainer {
         StrengthScore.self,
         Story.self,
         AIInsight.self,
+        Conversation.self,
+        ChatMessageRecord.self,
     ])
 
     /// Returns the app-wide `ModelContainer` that backs `@Query` and

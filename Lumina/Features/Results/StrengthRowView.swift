@@ -25,7 +25,7 @@ struct StrengthRowView: View {
 
             Image(systemName: strength.iconSF)
                 .font(.title3)
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(strength.categoryColor)
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: Theme.spacingXS) {
@@ -37,9 +37,9 @@ struct StrengthRowView: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         Capsule()
-                            .fill(Theme.accent.opacity(0.12))
+                            .fill(strength.categoryColor.opacity(0.12))
                         Capsule()
-                            .fill(Theme.accent)
+                            .fill(strength.categoryColor)
                             .frame(width: geo.size.width * fill)
                     }
                 }

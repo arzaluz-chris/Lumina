@@ -19,7 +19,7 @@ struct StrengthDetailView: View {
                         HStack(alignment: .firstTextBaseline, spacing: Theme.spacingXS) {
                             Text("\(points)")
                                 .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                                .foregroundStyle(Theme.accent)
+                                .foregroundStyle(strength.categoryColor)
                             Text("/ \(QuestionsCatalog.maxScorePerStrength)")
                                 .font(Theme.subheadFont)
                                 .foregroundStyle(Theme.secondaryText)
@@ -35,7 +35,7 @@ struct StrengthDetailView: View {
                         ForEach(relatedQuestions) { question in
                             HStack(alignment: .top, spacing: Theme.spacingM) {
                                 Image(systemName: "quote.opening")
-                                    .foregroundStyle(Theme.accent)
+                                    .foregroundStyle(strength.categoryColor)
                                 Text(question.textES)
                                     .font(Theme.bodyFont)
                                     .foregroundStyle(Theme.primaryText)
@@ -55,10 +55,10 @@ struct StrengthDetailView: View {
         HStack(spacing: Theme.spacingL) {
             Image(systemName: strength.iconSF)
                 .font(.system(size: 56))
-                .foregroundStyle(Theme.accent)
+                .foregroundStyle(strength.categoryColor)
                 .frame(width: 80, height: 80)
                 .background(
-                    Circle().fill(Theme.accent.opacity(0.12))
+                    Circle().fill(strength.categoryColor.opacity(0.12))
                 )
 
             VStack(alignment: .leading, spacing: Theme.spacingXS) {

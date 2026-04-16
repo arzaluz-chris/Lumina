@@ -67,12 +67,14 @@ struct StoriesListView: View {
             }
             .padding(.horizontal, Theme.spacingL)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(Theme.spacingL)
     }
 }
 
 private struct StoryRow: View {
     let story: Story
+    @State private var thumbnail: UIImage?
 
     private var strength: Strength? {
         StrengthsCatalog.strength(id: story.strengthID)
@@ -84,27 +86,43 @@ private struct StoryRow: View {
                 if let strength {
                     Image(systemName: strength.iconSF)
                         .font(.title2)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(strength.categoryColor)
                         .frame(width: 40, height: 40)
-                        .background(Circle().fill(Theme.accent.opacity(0.12)))
+                        .background(Circle().fill(strength.categoryColor.opacity(0.12)))
                 }
                 VStack(alignment: .leading, spacing: Theme.spacingXS) {
                     Text(strength?.nameES ?? "Fortaleza")
                         .font(Theme.subheadFont)
-                        .foregroundStyle(Theme.accent)
+                        .foregroundStyle(strength?.categoryColor ?? Theme.accent)
                     Text(story.body.isEmpty ? "Sin descripción" : story.body)
                         .font(Theme.bodyFont)
                         .foregroundStyle(Theme.primaryText)
                         .lineLimit(2)
-                    Text(story.createdAt.formatted(date: .abbreviated, time: .omitted))
+                    Text(story.createdAt.formatted(date: .abbreviated, time: .shortened))
                         .font(Theme.captionFont)
                         .foregroundStyle(Theme.secondaryText)
                 }
                 Spacer()
-                if story.photoFilename != nil {
-                    Image(systemName: "photo.fill")
-                        .foregroundStyle(Theme.secondaryText)
+                if let thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous))
+                } else if story.photoFilename != nil {
+                    RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous)
+                        .fill(Theme.cardBackground)
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Image(systemName: "photo.fill")
+                                .foregroundStyle(Theme.secondaryText)
+                        )
                 }
+            }
+        }
+        .task {
+            if let filename = story.photoFilename {
+                thumbnail = PhotoStore.loadImage(filename: filename)
             }
         }
     }

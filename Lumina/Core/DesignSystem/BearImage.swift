@@ -2,9 +2,10 @@ import SwiftUI
 
 /// Renders one of the 48 teddy bear illustrations from the asset catalog.
 ///
-/// Thin wrapper so view code doesn't have to repeat the `.resizable()` /
-/// `.scaledToFit()` pair and so we have one place to add (for example)
-/// a subtle drop shadow or a placeholder if the asset ever fails to load.
+/// Bears ship with transparent backgrounds (processed via remove.bg so
+/// shadows, props, and secondary elements are preserved with soft alpha)
+/// and are displayed directly over the screen background in both light
+/// and dark mode.
 struct BearImage: View {
     let name: String
 
@@ -16,8 +17,15 @@ struct BearImage: View {
     }
 }
 
-#Preview("bear_01") {
-    BearImage(name: "bear_01")
+#Preview("bear_07 light") {
+    BearImage(name: "bear_07")
         .padding()
         .background(Theme.background)
+}
+
+#Preview("bear_07 dark") {
+    BearImage(name: "bear_07")
+        .padding()
+        .background(Theme.background)
+        .preferredColorScheme(.dark)
 }

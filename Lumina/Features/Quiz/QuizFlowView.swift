@@ -3,10 +3,13 @@ import SwiftData
 import os
 
 /// Orchestrates one complete test run: shows the current question,
-/// records answers, persists a `TestResult` on completion, and hands
-/// control back to the caller via `onComplete`.
+/// records answers, persists a `TestResult` on completion, shows a
+/// processing animation, and hands control back via `onComplete`.
 struct QuizFlowView: View {
     @State private var state = QuizState()
+    @State private var isProcessing = false
+    @State private var savedResult: TestResult?
+    @AppStorage("hasSeenSwipeTutorial") private var hasSeenSwipeTutorial = false
     @Environment(\.modelContext) private var modelContext
 
     /// Called once the quiz is finished and the `TestResult` has been
@@ -14,26 +17,40 @@ struct QuizFlowView: View {
     var onComplete: (TestResult) -> Void
 
     var body: some View {
+        if isProcessing {
+            QuizProcessingView {
+                if let result = savedResult {
+                    onComplete(result)
+                }
+            }
+            .transition(.opacity)
+        } else {
+            if !hasSeenSwipeTutorial {
+                SwipeTutorialView {
+                    hasSeenSwipeTutorial = true
+                }
+            } else {
+                quizContent
+            }
+        }
+    }
+
+    private var quizContent: some View {
         VStack(spacing: Theme.spacingL) {
             progressHeader
                 .padding(.horizontal, Theme.spacingL)
                 .padding(.top, Theme.spacingM)
 
             if let question = state.currentQuestion {
-                ScrollView {
-                    QuestionCardView(question: question) { points in
-                        handleAnswer(points: points)
-                    }
-                    .padding(.vertical, Theme.spacingL)
-                    .id(state.currentIndex)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
+                QuestionCardView(question: question) { points in
+                    handleAnswer(points: points)
                 }
+                .id(state.currentIndex)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
             } else {
-                // Briefly visible when the last answer has been recorded
-                // but `onComplete` hasn't been invoked yet.
                 Spacer()
                 ProgressView()
                     .controlSize(.large)
@@ -41,6 +58,7 @@ struct QuizFlowView: View {
             }
         }
         .background(Theme.background.ignoresSafeArea())
+        .sensoryFeedback(.success, trigger: state.isComplete)
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: state.currentIndex)
     }
 
@@ -83,7 +101,14 @@ struct QuizFlowView: View {
         } catch {
             Logger.quiz.error("FAILED to save TestResult: \(error.localizedDescription)")
         }
-        Logger.quiz.info("Calling onComplete callback → navigating to Results")
-        onComplete(result)
+        savedResult = result
+        // Schedule quiz re-test reminder if enabled
+        if UserDefaults.standard.bool(forKey: "quizReminderEnabled") {
+            NotificationManager.shared.scheduleQuizReminder(lastCompletedAt: result.completedAt)
+        }
+        Logger.quiz.info("Quiz complete → showing processing animation")
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isProcessing = true
+        }
     }
 }

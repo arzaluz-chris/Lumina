@@ -51,8 +51,10 @@ struct InsightsView: View {
             .padding(Theme.spacingL)
         }
         .background(Theme.background.ignoresSafeArea())
+        .aiGlow(isActive: isGenerating)
         .navigationTitle("Análisis")
         .navigationBarTitleDisplayMode(.inline)
+        .sensoryFeedback(.success, trigger: loadedInsight != nil)
         .onAppear(perform: loadCached)
     }
 
@@ -166,7 +168,7 @@ struct InsightsView: View {
             VStack(alignment: .leading, spacing: Theme.spacingS) {
                 Text(item.strengthName)
                     .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.categoryColor(for: strengthID(named: item.strengthName)))
                 Text(item.howItShows)
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
@@ -183,7 +185,7 @@ struct InsightsView: View {
             VStack(alignment: .leading, spacing: Theme.spacingS) {
                 Text(item.strengthName)
                     .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(Theme.lavender)
                 Text(item.whyItMatters)
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
@@ -193,6 +195,12 @@ struct InsightsView: View {
                     .foregroundStyle(Theme.secondaryText)
             }
         }
+    }
+
+    /// Looks up the strength ID from a display name. Falls back to empty
+    /// string so `categoryColor` returns the default.
+    private func strengthID(named name: String) -> String {
+        StrengthsCatalog.all.first { $0.nameES.localizedCaseInsensitiveCompare(name) == .orderedSame }?.id ?? ""
     }
 
     // MARK: - Actions

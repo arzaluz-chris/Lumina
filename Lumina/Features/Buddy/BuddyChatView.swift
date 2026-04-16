@@ -4,12 +4,14 @@ import SwiftData
 /// The Lumina Buddy chat tab.
 ///
 /// Streams replies from the on-device Foundation Models session seeded
-/// with the user's latest strength snapshot. Shows a graceful empty
-/// state on devices without Apple Intelligence.
+/// with the user's latest strength snapshot. Supports conversation
+/// persistence, smart suggestions, and markdown rendering.
 struct BuddyChatView: View {
     @Query(sort: \TestResult.completedAt, order: .reverse) private var results: [TestResult]
     @State private var chatState = BuddyChatState()
     @FocusState private var isInputFocused: Bool
+    @State private var showConversationList = false
+    @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         NavigationStack {
@@ -21,9 +23,43 @@ struct BuddyChatView: View {
                 }
             }
             .background(Theme.background.ignoresSafeArea())
+            .aiGlow(isActive: chatState.isThinking)
             .navigationTitle("Buddy")
             .navigationBarTitleDisplayMode(.inline)
+            .sensoryFeedback(.impact(weight: .light), trigger: chatState.messages.count)
+            .sensoryFeedback(.impact(weight: .light), trigger: chatState.streamingChunkCount / 4)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button { showConversationList = true } label: {
+                        Image(systemName: "list.bullet")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        chatState.startNewConversation()
+                        let snapshot = results.first?.snapshot()
+                        chatState.start(with: snapshot, force: true)
+                    } label: {
+                        Image(systemName: "square.and.pencil")
+                    }
+                }
+
+
+            }
+            .sheet(isPresented: $showConversationList) {
+                ConversationListView(
+                    onSelect: { conversation in
+                        chatState.loadConversation(conversation)
+                    },
+                    onNew: {
+                        chatState.startNewConversation()
+                        let snapshot = results.first?.snapshot()
+                        chatState.start(with: snapshot, force: true)
+                    }
+                )
+            }
             .task(id: results.first?.id) {
+                chatState.configure(modelContext: modelContext)
                 let snapshot = results.first?.snapshot()
                 chatState.start(with: snapshot, force: true)
             }
@@ -42,6 +78,7 @@ struct BuddyChatView: View {
                     }
                     .padding(Theme.spacingL)
                 }
+                .scrollDismissesKeyboard(.interactively)
                 .onChange(of: chatState.messages.last?.content) {
                     if let lastID = chatState.messages.last?.id {
                         withAnimation {
@@ -49,6 +86,15 @@ struct BuddyChatView: View {
                         }
                     }
                 }
+            }
+
+            // Smart suggestions (visible when conversation is fresh)
+            if !chatState.suggestions.isEmpty && chatState.messages.count <= 1 {
+                SuggestionChipsView(suggestions: chatState.suggestions) { suggestion in
+                    chatState.input = suggestion
+                    Task { await chatState.send() }
+                }
+                .padding(.vertical, Theme.spacingS)
             }
 
             inputBar
@@ -73,6 +119,7 @@ struct BuddyChatView: View {
                 .focused($isInputFocused)
 
             Button {
+                isInputFocused = false
                 Task { await chatState.send() }
             } label: {
                 Image(systemName: "arrow.up.circle.fill")

@@ -34,4 +34,10 @@ extension Logger {
 
     /// App lifecycle, onboarding, tab navigation.
     static let app = Logger(subsystem: subsystem, category: "App")
+
+    /// Buddy conversation persistence and auto-rename.
+    static let conversations = Logger(subsystem: subsystem, category: "Conversations")
+
+    /// Notification scheduling and permissions.
+    static let notifications = Logger(subsystem: subsystem, category: "Notifications")
 }

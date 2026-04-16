@@ -26,8 +26,8 @@ final class LuminaBuddyChatService {
         return false
     }
 
-    func startSession(with snapshot: TestSnapshot?) {
-        Logger.buddy.info("=== BUDDY SESSION START ===")
+    func startSession(with snapshot: TestSnapshot?, tone: String = "calida", length: String = "media") {
+        Logger.buddy.info("=== BUDDY SESSION START (tone: \(tone), length: \(length)) ===")
         turnCount = 0
 
         let contextLine: String
@@ -50,13 +50,29 @@ final class LuminaBuddyChatService {
             Logger.buddy.info("Session started WITHOUT test results (user hasn't completed quiz)")
         }
 
+        let toneInstruction: String
+        switch tone {
+        case "concisa":    toneInstruction = "Responde de forma directa y al punto, sin rodeos."
+        case "motivadora": toneInstruction = "Usa un tono energético, entusiasta y motivador."
+        case "analitica":  toneInstruction = "Ofrece análisis profundo con matices científicos."
+        default:           toneInstruction = "Usa un tono cálido, cercano y empático."
+        }
+
+        let lengthInstruction: String
+        switch length {
+        case "corta": lengthInstruction = "Respuestas de máximo 1-2 párrafos cortos."
+        case "larga": lengthInstruction = "Puedes extenderte hasta 5 párrafos si es relevante."
+        default:      lengthInstruction = "Respuestas de 2-3 párrafos cortos."
+        }
+
         let instructions = Instructions("""
         Eres Lumina Buddy, un coach experto en las 24 fortalezas de carácter VIA \
-        de Peterson y Seligman. Acompañas al usuario con calidez, respeto y enfoque \
-        científico. Escribes en español neutral, en segunda persona (tú), con tono \
-        cercano pero profesional. Evitas clichés de autoayuda y consejos genéricos. \
-        Tus respuestas son breves (máximo 3 párrafos cortos) y específicas a las \
-        fortalezas del usuario. No haces diagnósticos psicológicos.
+        de Peterson y Seligman. Acompañas al usuario con respeto y enfoque científico. \
+        Escribes en español neutral, en segunda persona (tú). \
+        Evitas clichés de autoayuda y consejos genéricos. \
+        \(toneInstruction) \(lengthInstruction) \
+        Tus respuestas son específicas a las fortalezas del usuario. \
+        No haces diagnósticos psicológicos.
 
         \(contextLine)
         """)
@@ -112,6 +128,64 @@ final class LuminaBuddyChatService {
                     continuation.finish(throwing: error)
                 }
             }
+        }
+    }
+
+    /// Generates a short title for a conversation based on its content.
+    func generateTitle(for context: String) async throws -> String {
+        Logger.buddy.info("Generating conversation title...")
+        let titleSession = LanguageModelSession(
+            model: model,
+            instructions: Instructions(
+                "Eres un asistente que resume conversaciones sobre bienestar personal y fortalezas de carácter. " +
+                "Dada una conversación entre un usuario y un coach, genera un título descriptivo corto " +
+                "(máximo 5 palabras) en español que capture el tema principal. " +
+                "Solo responde con el título, sin comillas ni puntuación final."
+            )
+        )
+        let response = try await titleSession.respond(to: "Resume el tema de esta conversación:\n\(context)")
+        let title = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        Logger.buddy.info("Generated title: \(title)")
+        return title
+    }
+
+    /// Generates contextual prompt suggestions based on user strengths.
+    func generateSuggestions(for snapshot: TestSnapshot?) async -> [String] {
+        Logger.buddy.info("Generating smart suggestions...")
+        let fallback = [
+            "¿Qué son las fortalezas VIA?",
+            "¿Cómo puedo usar mis fortalezas en el día a día?",
+            "¿Qué fortaleza debería desarrollar?",
+            "Dame un ejercicio para esta semana",
+        ]
+
+        guard let snapshot, !snapshot.rankedEntries.isEmpty else {
+            Logger.buddy.debug("No snapshot available — returning static suggestions")
+            return fallback
+        }
+
+        do {
+            let top3 = snapshot.top(3).map(\.strengthName).joined(separator: ", ")
+            let suggestSession = LanguageModelSession(
+                model: model,
+                instructions: Instructions(
+                    "Genera exactamente 4 preguntas cortas en español (máximo 8 palabras cada una) " +
+                    "que un usuario podría hacerle a un coach de fortalezas VIA. " +
+                    "Basate en estas fortalezas del usuario: \(top3). " +
+                    "Responde SOLO con las 4 preguntas, una por línea, sin numeración ni viñetas."
+                )
+            )
+            let response = try await suggestSession.respond(to: "Genera las preguntas.")
+            let lines = response.content
+                .components(separatedBy: .newlines)
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            let suggestions = Array(lines.prefix(4))
+            Logger.buddy.info("Generated \(suggestions.count) suggestions")
+            return suggestions.isEmpty ? fallback : suggestions
+        } catch {
+            Logger.buddy.error("Failed to generate suggestions: \(error.localizedDescription)")
+            return fallback
         }
     }
 

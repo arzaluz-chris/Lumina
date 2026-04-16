@@ -10,8 +10,13 @@ struct LuminaButton: View {
     var isEnabled: Bool = true
     let action: () -> Void
 
+    @State private var tapCount = 0
+
     var body: some View {
-        Button(action: action) {
+        Button {
+            tapCount += 1
+            action()
+        } label: {
             HStack(spacing: Theme.spacingS) {
                 if let systemImage {
                     Image(systemName: systemImage)
@@ -30,7 +35,7 @@ struct LuminaButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
-        .sensoryFeedback(.impact(weight: .medium), trigger: isEnabled)
+        .sensoryFeedback(.impact(weight: .medium), trigger: tapCount)
     }
 }
 

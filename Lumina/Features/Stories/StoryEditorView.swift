@@ -1,10 +1,12 @@
 import SwiftUI
 import SwiftData
 import PhotosUI
+import FoundationModels
 import os
 
 /// Create a new strength-tied story. Supports text, an optional photo
 /// from the user's library, and requires the user to pick a strength.
+/// Includes an AI-powered writing prompt suggestion.
 struct StoryEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -14,6 +16,9 @@ struct StoryEditorView: View {
     @State private var photoItem: PhotosPickerItem?
     @State private var selectedImage: UIImage?
     @State private var isSaving = false
+    @State private var storyDate: Date = Date()
+    @State private var aiPrompt: String?
+    @State private var isGeneratingPrompt = false
 
     var body: some View {
         NavigationStack {
@@ -29,9 +34,48 @@ struct StoryEditorView: View {
                 }
 
                 Section("Tu historia") {
+                    if let prompt = aiPrompt {
+                        HStack(alignment: .top, spacing: Theme.spacingS) {
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(Theme.gold)
+                            Text(prompt)
+                                .font(Theme.captionFont)
+                                .foregroundStyle(Theme.secondaryText)
+                                .italic()
+                        }
+                        .padding(.vertical, Theme.spacingXS)
+                    }
+
                     TextEditor(text: $storyText)
                         .frame(minHeight: 160)
                         .font(Theme.bodyFont)
+
+                    Button {
+                        Task { await generateWritingPrompt() }
+                    } label: {
+                        HStack(spacing: Theme.spacingS) {
+                            if isGeneratingPrompt {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: "sparkles")
+                            }
+                            Text("Sugiéreme una historia")
+                        }
+                        .font(Theme.captionFont)
+                        .foregroundStyle(Theme.accent)
+                    }
+                    .disabled(isGeneratingPrompt)
+                }
+
+                Section("Fecha y hora") {
+                    DatePicker(
+                        "Fecha",
+                        selection: $storyDate,
+                        in: ...Date(),
+                        displayedComponents: [.date, .hourAndMinute]
+                    )
+                    .datePickerStyle(.compact)
                 }
 
                 Section("Foto (opcional)") {
@@ -64,6 +108,7 @@ struct StoryEditorView: View {
             .onChange(of: photoItem) { _, newItem in
                 Task { await loadImage(from: newItem) }
             }
+            .sensoryFeedback(.success, trigger: isSaving)
         }
     }
 
@@ -72,6 +117,62 @@ struct StoryEditorView: View {
         if let data = try? await item.loadTransferable(type: Data.self),
            let image = UIImage(data: data) {
             selectedImage = image
+        }
+    }
+
+    private static let fallbackPrompts: [String: String] = [
+        "creatividad": "¿En qué momento reciente resolviste algo de una forma original o inesperada?",
+        "curiosidad": "¿Qué descubriste recientemente que te haya sorprendido o fascinado?",
+        "juicio": "¿Cuándo fue la última vez que analizaste una situación desde varios ángulos antes de decidir?",
+        "amor_aprendizaje": "¿Qué aprendiste recientemente que te haya entusiasmado compartir?",
+        "perspectiva": "¿Alguien te pidió consejo recientemente? ¿Qué le dijiste?",
+        "valentia": "¿En qué momento reciente actuaste a pesar de sentir miedo o incertidumbre?",
+        "perseverancia": "¿Qué proyecto o meta seguiste adelante aunque fue difícil?",
+        "honestidad": "¿Cuándo elegiste ser transparente aunque hubiera sido más fácil no serlo?",
+        "coraje": "¿En qué momento defendiste algo en lo que crees?",
+        "amor": "¿Cómo expresaste cariño o cercanía con alguien importante esta semana?",
+        "bondad": "¿Qué acto de generosidad hiciste recientemente, por pequeño que fuera?",
+        "inteligencia_social": "¿Cuándo percibiste lo que alguien necesitaba sin que te lo dijera?",
+        "humanidad": "¿En qué momento conectaste profundamente con otra persona?",
+        "trabajo_equipo": "¿Cómo contribuiste al éxito de un grupo o equipo recientemente?",
+        "justicia": "¿Cuándo te aseguraste de que todos fueran tratados de forma equitativa?",
+        "liderazgo": "¿En qué situación tomaste la iniciativa para guiar a otros?",
+        "perdon": "¿Cuándo elegiste soltar un resentimiento o dar una segunda oportunidad?",
+        "prudencia": "¿En qué momento tu cautela te protegió de una mala decisión?",
+        "autorregulacion": "¿Cuándo lograste mantener la calma o el control en una situación difícil?",
+        "apreciacion_belleza": "¿Qué momento de belleza cotidiana te detuvo recientemente?",
+        "gratitud": "¿Por qué pequeño detalle te sentiste agradecido hoy o esta semana?",
+        "esperanza": "¿Qué te hace sentir optimista sobre el futuro en este momento?",
+        "humor": "¿Cuándo tu sentido del humor alivió una situación tensa o difícil?",
+        "espiritualidad": "¿En qué momento sentiste que algo más grande le daba sentido a tu día?",
+    ]
+
+    private func generateWritingPrompt() async {
+        guard case .available = SystemLanguageModel.default.availability else {
+            aiPrompt = Self.fallbackPrompts[selectedStrengthID]
+            return
+        }
+        let strengthName = StrengthsCatalog.strength(id: selectedStrengthID)?.nameES ?? selectedStrengthID
+
+        isGeneratingPrompt = true
+        defer { isGeneratingPrompt = false }
+
+        do {
+            let session = LanguageModelSession(
+                model: .default,
+                instructions: Instructions(
+                    "Eres un asistente de escritura reflexiva enfocado en psicología positiva y fortalezas de carácter VIA. " +
+                    "Tu tarea es sugerir una pregunta reflexiva breve (1-2 oraciones) en español que inspire al usuario a " +
+                    "recordar una experiencia cotidiana positiva relacionada con la fortaleza de carácter '\(strengthName)'. " +
+                    "Ejemplo de tono: '¿Recuerdas algún momento esta semana donde tu curiosidad te llevó a aprender algo nuevo?'. " +
+                    "Solo responde con la pregunta, sin explicaciones adicionales."
+                )
+            )
+            let response = try await session.respond(to: "Sugiere una pregunta reflexiva sobre la fortaleza \(strengthName).")
+            aiPrompt = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        } catch {
+            Logger.stories.error("Failed to generate writing prompt: \(error.localizedDescription)")
+            aiPrompt = Self.fallbackPrompts[selectedStrengthID]
         }
     }
 
@@ -86,6 +187,7 @@ struct StoryEditorView: View {
         }
 
         let story = Story(
+            createdAt: storyDate,
             body: storyText.trimmingCharacters(in: .whitespacesAndNewlines),
             strengthID: selectedStrengthID,
             photoFilename: photoFilename
