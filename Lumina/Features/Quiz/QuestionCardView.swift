@@ -7,6 +7,10 @@ import SwiftUI
 /// colored callout above the card, so the user always sees the current
 /// answer clearly — even in light mode. Tap on a pill also commits, with
 /// a brief highlight so the user sees their pick before the fly-away.
+///
+/// Redesign (2026-04-17): the sticker card now carries a soft gradient
+/// tinted by the question's VIA virtue for playful contrast; the callout
+/// sits on a glass capsule. Drag math and fly-away timing are unchanged.
 struct QuestionCardView: View {
     let question: Question
     let onAnswer: (Int) -> Void
@@ -25,6 +29,10 @@ struct QuestionCardView: View {
     private let stepWidth: CGFloat = 36
     private let hoverActivation: CGFloat = 20
 
+    private var virtueColor: Color {
+        Theme.categoryColor(for: question.strengthID)
+    }
+
     var body: some View {
         VStack(spacing: Theme.spacingM) {
             Spacer(minLength: 0)
@@ -33,7 +41,7 @@ struct QuestionCardView: View {
                 .padding(.horizontal, Theme.spacingM)
                 .overlay(alignment: .top) {
                     callout
-                        .offset(y: -28)
+                        .offset(y: -32)
                 }
 
             Text(question.textES)
@@ -69,15 +77,26 @@ struct QuestionCardView: View {
             .frame(maxWidth: .infinity)
             .aspectRatio(0.82, contentMode: .fit)
             .background(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .fill(Theme.cardBackground)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .fill(Theme.cardBackground)
+                    // Subtle virtue-tinted wash behind the bear.
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [virtueColor.opacity(0.18), virtueColor.opacity(0.0)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    .stroke(virtueColor.opacity(0.22), lineWidth: 1.2)
             )
-            .shadow(color: .black.opacity(0.12), radius: 18, x: 0, y: 10)
-            .shadow(color: .black.opacity(0.04), radius: 3, x: 0, y: 1)
+            .shadow(color: virtueColor.opacity(0.22), radius: 22, x: 0, y: 12)
+            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
             .offset(offset)
             .rotationEffect(.degrees(cardRotation))
             .scaleEffect(cardScale)
@@ -96,17 +115,17 @@ struct QuestionCardView: View {
             Text(LikertScaleView.label(for: value))
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
-                .padding(.horizontal, 22)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(color)
+                        .fill(color.gradient)
                 )
                 .overlay(
                     Capsule(style: .continuous)
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)
                 )
-                .shadow(color: color.opacity(0.45), radius: 14, x: 0, y: 6)
+                .shadow(color: color.opacity(0.45), radius: 16, x: 0, y: 8)
                 .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
                 .transition(.scale(scale: 0.5).combined(with: .opacity))
                 .id(value)

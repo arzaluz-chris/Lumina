@@ -5,6 +5,10 @@ import SwiftUI
 /// mirrors the live quiz UI (real bear sticker in its card, real pill
 /// row with the same color scale) and plays a looping swipe animation
 /// with an animated finger, so kids learn by watching.
+///
+/// Redesign (2026-04-17): hero gradient backdrop, glass instruction card,
+/// start button uses the shared ``LuminaButton`` (large). Animation loop
+/// and phase math are unchanged.
 struct SwipeTutorialView: View {
     let onDismiss: () -> Void
 
@@ -13,12 +17,7 @@ struct SwipeTutorialView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Theme.background, Theme.accent.opacity(0.08)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Theme.heroGradient.ignoresSafeArea()
 
             VStack(spacing: Theme.spacingL) {
                 header
@@ -58,7 +57,7 @@ struct SwipeTutorialView: View {
     private var header: some View {
         VStack(spacing: Theme.spacingXS) {
             Text("¿Cómo respondo?")
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .font(Theme.heroFont)
                 .foregroundStyle(Theme.primaryText)
 
             Text("Te enseño — es súper fácil")
@@ -69,10 +68,6 @@ struct SwipeTutorialView: View {
 
     // MARK: - Demo stage
 
-    // Uses real components so kids see exactly what they'll get: a
-    // sticker card with a bear inside, the animated callout above it
-    // while it drifts, the 5 colored pills below with the matching one
-    // lit up, and a finger hint doing the swipe.
     private var demoStage: some View {
         VStack(spacing: Theme.spacingM) {
             ZStack(alignment: .top) {
@@ -101,9 +96,9 @@ struct SwipeTutorialView: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+                    .stroke(Theme.accent.opacity(0.25), lineWidth: 1.2)
             )
-            .shadow(color: .black.opacity(0.14), radius: 16, x: 0, y: 10)
+            .shadow(color: Theme.accent.opacity(0.18), radius: 18, x: 0, y: 10)
             .offset(x: cardOffsetX)
             .rotationEffect(.degrees(cardOffsetX / 14))
     }
@@ -117,7 +112,7 @@ struct SwipeTutorialView: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 8)
-                .background(Capsule().fill(color))
+                .background(Capsule().fill(color.gradient))
                 .shadow(color: color.opacity(0.4), radius: 10, x: 0, y: 4)
                 .transition(.scale.combined(with: .opacity))
                 .id(value)
@@ -129,7 +124,7 @@ struct SwipeTutorialView: View {
             .font(.system(size: 38, weight: .bold))
             .foregroundStyle(.white)
             .padding(10)
-            .background(Circle().fill(Theme.accent))
+            .background(Circle().fill(Theme.accent.gradient))
             .shadow(color: Theme.accent.opacity(0.5), radius: 12, x: 0, y: 6)
             .rotationEffect(.degrees(-10))
     }
@@ -137,7 +132,7 @@ struct SwipeTutorialView: View {
     // A miniature replica of the real pill row, driven by the same
     // hoveredValue logic so the demo syncs perfectly with the swipe.
     private var demoPillRow: some View {
-        HStack(spacing: 5) {
+        HStack(spacing: 6) {
             ForEach(1...5, id: \.self) { value in
                 let isActive = highlightedValue == value
                 let color = LikertColorScale.colors[value - 1]
@@ -151,11 +146,17 @@ struct SwipeTutorialView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
                 }
-                .frame(maxWidth: .infinity, minHeight: 52)
-                .background(Capsule().fill(isActive ? color : color.opacity(0.16)))
-                .overlay(Capsule().stroke(color.opacity(isActive ? 0 : 0.45), lineWidth: 1.5))
+                .frame(maxWidth: .infinity, minHeight: 56)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(isActive ? AnyShapeStyle(color.gradient) : AnyShapeStyle(color.opacity(0.16)))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(color.opacity(isActive ? 0 : 0.45), lineWidth: 1.5)
+                )
                 .shadow(color: color.opacity(isActive ? 0.45 : 0), radius: isActive ? 8 : 0, x: 0, y: 3)
-                .scaleEffect(isActive ? 1.12 : 1.0)
+                .scaleEffect(isActive ? 1.10 : 1.0)
                 .animation(.spring(response: 0.22, dampingFraction: 0.7), value: isActive)
             }
         }
@@ -165,17 +166,13 @@ struct SwipeTutorialView: View {
     // MARK: - Instructions
 
     private var instructions: some View {
-        VStack(spacing: Theme.spacingS) {
-            instructionRow(emoji: "👉", text: "Arrastra al osito a la derecha si te describe")
-            instructionRow(emoji: "👈", text: "Arrástralo a la izquierda si no")
-            instructionRow(emoji: "☝️", text: "O toca una respuesta del 1 al 5")
+        CardContainer(style: .glass, padding: Theme.spacingM) {
+            VStack(spacing: Theme.spacingS) {
+                instructionRow(emoji: "👉", text: "Arrastra al osito a la derecha si te describe")
+                instructionRow(emoji: "👈", text: "Arrástralo a la izquierda si no")
+                instructionRow(emoji: "☝️", text: "O toca una respuesta del 1 al 5")
+            }
         }
-        .padding(Theme.spacingM)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Theme.cardBackground)
-        )
-        .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }
 
     private func instructionRow(emoji: String, text: String) -> some View {
@@ -192,26 +189,11 @@ struct SwipeTutorialView: View {
     // MARK: - CTA
 
     private var startButton: some View {
-        Button {
+        LuminaButton(title: "¡Empezar!", systemImage: "arrow.right", size: .large) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 onDismiss()
             }
-        } label: {
-            HStack(spacing: Theme.spacingS) {
-                Text("¡Empezar!")
-                Image(systemName: "arrow.right")
-            }
-            .font(.system(size: 20, weight: .bold, design: .rounded))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Theme.spacingM)
-            .background(
-                RoundedRectangle(cornerRadius: Theme.buttonRadius, style: .continuous)
-                    .fill(Theme.accentGradient)
-            )
-            .shadow(color: Theme.accent.opacity(0.35), radius: 14, x: 0, y: 8)
         }
-        .buttonStyle(.plain)
         .sensoryFeedback(.impact(weight: .medium), trigger: cycle > 0.5)
     }
 
