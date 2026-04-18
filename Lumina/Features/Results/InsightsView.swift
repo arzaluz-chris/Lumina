@@ -10,6 +10,11 @@ import os
 /// 3. **Loading** — call in flight, show spinner.
 /// 4. **Unavailable** — device doesn't support Apple Intelligence, show
 ///    friendly explanation and keep the user unblocked.
+///
+/// Redesign (2026-04-17): premium header with sparkles in gradient badge,
+/// cards gain stronger typographic hierarchy and virtue-colored chips
+/// for each signature strength / growth area. AIGlowOverlay (line ~56)
+/// is preserved exactly.
 struct InsightsView: View {
     let result: TestResult
 
@@ -39,7 +44,7 @@ struct InsightsView: View {
                     CardContainer {
                         VStack(alignment: .leading, spacing: Theme.spacingS) {
                             Label("No se pudo generar el análisis", systemImage: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Theme.warning)
                                 .font(Theme.subheadFont)
                             Text(error)
                                 .font(Theme.captionFont)
@@ -50,7 +55,7 @@ struct InsightsView: View {
             }
             .padding(Theme.spacingL)
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(Theme.heroGradient.ignoresSafeArea())
         .aiGlow(isActive: isGenerating)
         .navigationTitle("Análisis")
         .navigationBarTitleDisplayMode(.inline)
@@ -63,11 +68,15 @@ struct InsightsView: View {
     private var header: some View {
         HStack(spacing: Theme.spacingM) {
             Image(systemName: "sparkles")
-                .font(.largeTitle)
-                .foregroundStyle(Theme.accent)
+                .font(.title.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 56, height: 56)
+                .background(Circle().fill(Theme.accentGradient))
+                .luminaShadow(Theme.shadowCard)
             VStack(alignment: .leading, spacing: Theme.spacingXS) {
                 Text("Tu análisis personalizado")
-                    .font(Theme.headlineFont)
+                    .font(Theme.heroFont)
+                    .foregroundStyle(Theme.primaryText)
                 Text("Generado en tu dispositivo")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)
@@ -83,8 +92,9 @@ struct InsightsView: View {
                 Text("Usamos Apple Intelligence en tu dispositivo para redactar una lectura basada en tus respuestas. Ningún dato sale de tu iPhone.")
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
 
-                LuminaButton(title: "Generar análisis", systemImage: "sparkles") {
+                LuminaButton(title: "Generar análisis", systemImage: "sparkles", size: .large) {
                     Task { await generate(force: false) }
                 }
             }
@@ -95,6 +105,7 @@ struct InsightsView: View {
         CardContainer {
             HStack(spacing: Theme.spacingM) {
                 ProgressView()
+                    .tint(Theme.accent)
                 VStack(alignment: .leading, spacing: Theme.spacingXS) {
                     Text("Generando tu análisis…")
                         .font(Theme.subheadFont)
@@ -108,7 +119,7 @@ struct InsightsView: View {
     }
 
     private func unavailable(reason: String) -> some View {
-        CardContainer {
+        CardContainer(style: .outlined) {
             VStack(alignment: .leading, spacing: Theme.spacingM) {
                 Label("Apple Intelligence no disponible", systemImage: "info.circle.fill")
                     .font(Theme.subheadFont)
@@ -116,6 +127,7 @@ struct InsightsView: View {
                 Text(reason)
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
                 Text("Tus resultados siguen visibles en Mis 24.")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)
@@ -126,23 +138,45 @@ struct InsightsView: View {
     @ViewBuilder
     private func rendered(insight: StrengthInsight) -> some View {
         CardContainer {
-            Text(insight.summary)
-                .font(Theme.bodyFont)
-                .foregroundStyle(Theme.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .top, spacing: Theme.spacingM) {
+                Image(systemName: "text.alignleft")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+                    .frame(width: 36, height: 36)
+                    .background(Circle().fill(Theme.accent.opacity(0.14)))
+                Text(insight.summary)
+                    .font(Theme.bodyFont)
+                    .foregroundStyle(Theme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
 
-        sectionTitle("Tus fortalezas signature")
+        sectionTitle(
+            "Tus fortalezas signature",
+            subtitle: "Las 5 que más te representan",
+            icon: "star.fill",
+            tint: Theme.gold
+        )
         ForEach(Array(insight.signatureStrengths.enumerated()), id: \.offset) { _, item in
             signatureCard(item)
         }
 
-        sectionTitle("Áreas de crecimiento")
+        sectionTitle(
+            "Áreas de crecimiento",
+            subtitle: "Oportunidades para expandirte",
+            icon: "arrow.up.forward.circle.fill",
+            tint: Theme.lavender
+        )
         ForEach(Array(insight.growthAreas.enumerated()), id: \.offset) { _, item in
             growthCard(item)
         }
 
-        sectionTitle("Para llevarte")
+        sectionTitle(
+            "Para llevarte",
+            subtitle: nil,
+            icon: "heart.fill",
+            tint: Theme.danger
+        )
         CardContainer {
             Text(insight.encouragement)
                 .font(Theme.bodyFont)
@@ -154,25 +188,24 @@ struct InsightsView: View {
         LuminaSecondaryButton(title: "Regenerar análisis", systemImage: "arrow.clockwise") {
             Task { await generate(force: true) }
         }
+        .padding(.top, Theme.spacingS)
     }
 
-    private func sectionTitle(_ text: String) -> some View {
-        Text(text)
-            .font(Theme.subheadFont)
-            .foregroundStyle(Theme.primaryText)
+    private func sectionTitle(_ text: String, subtitle: String?, icon: String, tint: Color) -> some View {
+        LuminaSectionHeader(title: text, subtitle: subtitle, systemImage: icon, iconTint: tint)
             .padding(.top, Theme.spacingS)
     }
 
     private func signatureCard(_ item: SignatureStrengthItem) -> some View {
-        CardContainer {
+        let color = Theme.categoryColor(for: strengthID(named: item.strengthName))
+        return CardContainer {
             VStack(alignment: .leading, spacing: Theme.spacingS) {
-                Text(item.strengthName)
-                    .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.categoryColor(for: strengthID(named: item.strengthName)))
+                LuminaChip(title: item.strengthName, style: .filled(color))
                 Text(item.howItShows)
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
-                Divider()
+                    .fixedSize(horizontal: false, vertical: true)
+                Divider().padding(.vertical, 2)
                 Label(item.weeklyAction, systemImage: "sparkles")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)
@@ -183,13 +216,12 @@ struct InsightsView: View {
     private func growthCard(_ item: GrowthAreaItem) -> some View {
         CardContainer {
             VStack(alignment: .leading, spacing: Theme.spacingS) {
-                Text(item.strengthName)
-                    .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.lavender)
+                LuminaChip(title: item.strengthName, style: .filled(Theme.lavender))
                 Text(item.whyItMatters)
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
-                Divider()
+                    .fixedSize(horizontal: false, vertical: true)
+                Divider().padding(.vertical, 2)
                 Label(item.firstStep, systemImage: "arrow.forward.circle.fill")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)

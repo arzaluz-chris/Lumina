@@ -6,6 +6,11 @@ import os
 /// Root of the "Mis 24" tab. Renders the 24 ranked strengths from the
 /// latest `TestResult`, a CTA to open the AI-generated insight, a daily
 /// AI reflection, and an evolution card when multiple tests exist.
+///
+/// Redesign (2026-04-17): hero top-3 preview above the scroll, insight and
+/// evolution CTAs get richer iconography and gradient fills, empty state
+/// uses ``LuminaEmptyState``. All business logic (queries, LLM calls,
+/// AppStorage keys) is preserved.
 struct ResultsTabView: View {
     @Query(sort: \TestResult.completedAt, order: .reverse) private var results: [TestResult]
 
@@ -28,42 +33,109 @@ struct ResultsTabView: View {
     private func content(for result: TestResult) -> some View {
         ScrollView {
             VStack(spacing: Theme.spacingL) {
+                topThreeHero(for: result)
+
                 insightCTA(for: result)
 
-                // Daily AI reflection
                 DailyReflectionCard(result: result)
 
-                // Evolution card (if multiple tests)
                 if results.count > 1, let previous = results.dropFirst().first {
                     EvolutionCard(current: result, previous: previous)
                 }
 
-                CardContainer(padding: Theme.spacingM) {
-                    VStack(spacing: 0) {
-                        ForEach(Array(result.rankedStrengths.enumerated()), id: \.offset) { index, entry in
-                            NavigationLink {
-                                StrengthDetailView(
-                                    strength: entry.strength,
-                                    points: entry.points
-                                )
-                            } label: {
-                                StrengthRowView(
-                                    rank: index + 1,
-                                    strength: entry.strength,
-                                    points: entry.points
-                                )
-                            }
-                            .buttonStyle(.plain)
+                allStrengthsCard(for: result)
+            }
+            .padding(Theme.spacingL)
+        }
+    }
 
-                            if index < result.rankedStrengths.count - 1 {
-                                Divider()
-                                    .padding(.leading, 68)
-                            }
+    private func topThreeHero(for result: TestResult) -> some View {
+        let top = Array(result.rankedStrengths.prefix(3))
+        return CardContainer(style: .glass, cornerRadius: Theme.heroRadius) {
+            VStack(alignment: .leading, spacing: Theme.spacingM) {
+                LuminaSectionHeader(
+                    title: "Tu top 3",
+                    subtitle: "Tus fortalezas más expresadas",
+                    systemImage: "star.fill",
+                    iconTint: Theme.gold
+                )
+
+                HStack(alignment: .top, spacing: Theme.spacingS) {
+                    ForEach(Array(top.enumerated()), id: \.offset) { index, entry in
+                        topThreeTile(index: index, strength: entry.strength, points: entry.points)
+                    }
+                }
+            }
+        }
+    }
+
+    private func topThreeTile(index: Int, strength: Strength, points: Int) -> some View {
+        let color = Theme.categoryColor(for: strength.id)
+        return VStack(spacing: Theme.spacingS) {
+            ZStack {
+                Circle()
+                    .fill(color.gradient)
+                    .frame(width: 56, height: 56)
+                    .luminaShadow(Theme.shadowCard)
+                Image(systemName: strength.iconSF)
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(.white)
+            }
+            Text("#\(index + 1)")
+                .font(Theme.captionFont.weight(.heavy))
+                .foregroundStyle(color)
+            Text(strength.nameES)
+                .font(Theme.captionFont.weight(.semibold))
+                .foregroundStyle(Theme.primaryText)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
+            Text("\(points) pts")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Theme.secondaryText)
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Theme.spacingS)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(color.opacity(0.08))
+        )
+    }
+
+    private func allStrengthsCard(for result: TestResult) -> some View {
+        CardContainer(padding: Theme.spacingM) {
+            VStack(alignment: .leading, spacing: Theme.spacingM) {
+                LuminaSectionHeader(
+                    title: "Todas tus 24 fortalezas",
+                    subtitle: "De la más fuerte a la menos expresada",
+                    systemImage: "chart.bar.fill"
+                )
+                .padding(.horizontal, Theme.spacingXS)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(result.rankedStrengths.enumerated()), id: \.offset) { index, entry in
+                        NavigationLink {
+                            StrengthDetailView(
+                                strength: entry.strength,
+                                points: entry.points
+                            )
+                        } label: {
+                            StrengthRowView(
+                                rank: index + 1,
+                                strength: entry.strength,
+                                points: entry.points
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        if index < result.rankedStrengths.count - 1 {
+                            Divider()
+                                .padding(.leading, 72)
                         }
                     }
                 }
             }
-            .padding(Theme.spacingL)
         }
     }
 
@@ -74,10 +146,11 @@ struct ResultsTabView: View {
             CardContainer {
                 HStack(spacing: Theme.spacingM) {
                     Image(systemName: "sparkles")
-                        .font(.title)
+                        .font(.title2.weight(.semibold))
                         .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
+                        .frame(width: 52, height: 52)
                         .background(Circle().fill(Theme.accentGradient))
+                        .luminaShadow(Theme.shadowCard)
 
                     VStack(alignment: .leading, spacing: Theme.spacingXS) {
                         Text("Tu análisis personalizado")
@@ -89,6 +162,7 @@ struct ResultsTabView: View {
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
+                        .font(.callout.weight(.semibold))
                         .foregroundStyle(Theme.secondaryText)
                 }
             }
@@ -97,18 +171,11 @@ struct ResultsTabView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Theme.spacingL) {
-            BearImage(name: "bear_01")
-                .frame(maxHeight: 220)
-            Text("Aún no has hecho el test")
-                .font(Theme.headlineFont)
-            Text("Ve a la pestaña Test para descubrir tus 24 fortalezas.")
-                .font(Theme.bodyFont)
-                .foregroundStyle(Theme.secondaryText)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Theme.spacingL)
+        LuminaEmptyState(
+            bearName: "bear_01",
+            title: "Aún no has hecho el test",
+            message: "Ve a la pestaña Test para descubrir tus 24 fortalezas."
+        )
     }
 }
 
@@ -154,13 +221,13 @@ private struct DailyReflectionCard: View {
     private var cardContent: some View {
         if !cachedText.isEmpty && isToday {
             CardContainer {
-                VStack(alignment: .leading, spacing: Theme.spacingS) {
-                    HStack(spacing: Theme.spacingS) {
-                        Image(systemName: "sun.max.fill")
-                            .foregroundStyle(Theme.gold)
-                        Text("Reflexión del día")
-                            .font(Theme.subheadFont)
-                    }
+                VStack(alignment: .leading, spacing: Theme.spacingM) {
+                    LuminaSectionHeader(
+                        title: "Reflexión del día",
+                        subtitle: "Inspirada en tus top 3 fortalezas",
+                        systemImage: "sun.max.fill",
+                        iconTint: Theme.gold
+                    )
                     Text(markdownReflection)
                         .font(Theme.bodyFont)
                         .foregroundStyle(Theme.primaryText)
@@ -171,12 +238,14 @@ private struct DailyReflectionCard: View {
             CardContainer {
                 HStack(spacing: Theme.spacingM) {
                     ProgressView()
-                    Text("Generando reflexión...")
+                        .tint(Theme.gold)
+                    Text("Generando reflexión…")
                         .font(Theme.captionFont)
                         .foregroundStyle(Theme.secondaryText)
                     Spacer()
                 }
             }
+            .aiGlow(isActive: isLoading)
         } else {
             Color.clear.frame(height: 0)
         }
@@ -257,10 +326,12 @@ private struct EvolutionCard: View {
                 CardContainer {
                     HStack(spacing: Theme.spacingM) {
                         Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.title2)
-                            .foregroundStyle(Theme.lavender)
-                            .frame(width: 40, height: 40)
-                            .background(Circle().fill(Theme.lavender.opacity(0.12)))
+                            .font(.title2.weight(.semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 52, height: 52)
+                            .background(Circle().fill(Theme.lavender.gradient))
+                            .luminaShadow(Theme.shadowCard)
+
                         VStack(alignment: .leading, spacing: Theme.spacingXS) {
                             Text("Cómo has cambiado")
                                 .font(Theme.subheadFont)
@@ -271,6 +342,7 @@ private struct EvolutionCard: View {
                         }
                         Spacer()
                         Image(systemName: "chevron.right")
+                            .font(.callout.weight(.semibold))
                             .foregroundStyle(Theme.secondaryText)
                     }
                 }
@@ -280,12 +352,14 @@ private struct EvolutionCard: View {
             CardContainer {
                 HStack(spacing: Theme.spacingM) {
                     ProgressView()
-                    Text("Analizando evolución...")
+                        .tint(Theme.lavender)
+                    Text("Analizando evolución…")
                         .font(Theme.captionFont)
                         .foregroundStyle(Theme.secondaryText)
                     Spacer()
                 }
             }
+            .aiGlow(isActive: isLoading)
         } else {
             Color.clear.frame(height: 0)
         }
