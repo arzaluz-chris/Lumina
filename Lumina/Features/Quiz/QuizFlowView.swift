@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import StoreKit
 import os
 
 /// Orchestrates one complete test run: shows the current question,
@@ -14,6 +15,7 @@ struct QuizFlowView: View {
     @State private var savedResult: TestResult?
     @AppStorage("hasSeenSwipeTutorial") private var hasSeenSwipeTutorial = false
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.requestReview) private var requestReview
 
     /// Called once the quiz is finished and the `TestResult` has been
     /// saved. The caller typically switches to the Results tab.
@@ -112,6 +114,11 @@ struct QuizFlowView: View {
         // Schedule quiz re-test reminder if enabled
         if UserDefaults.standard.bool(forKey: "quizReminderEnabled") {
             NotificationManager.shared.scheduleQuizReminder(lastCompletedAt: result.completedAt)
+        }
+        // Completing a test is the strongest signal the user is
+        // engaged; record it for the App Store review coordinator.
+        ReviewRequestCoordinator.shared.recordMilestone(.completedQuiz) {
+            requestReview()
         }
         withAnimation(.easeInOut(duration: 0.3)) {
             isProcessing = true

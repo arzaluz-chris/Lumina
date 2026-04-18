@@ -101,6 +101,9 @@ struct StoryDetailView: View {
         if let filename = story.photoFilename {
             PhotoStore.delete(filename: filename)
         }
+        // Cancel any pending "on this day" / memory reminders before
+        // removing the record so we don't leak stale notifications.
+        StoryReminderScheduler.cancelAll(for: story.id)
         modelContext.delete(story)
         try? modelContext.save()
         dismiss()

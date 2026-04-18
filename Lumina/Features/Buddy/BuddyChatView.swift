@@ -16,6 +16,8 @@ struct BuddyChatView: View {
     @State private var chatState = BuddyChatState()
     @FocusState private var isInputFocused: Bool
     @State private var showConversationList = false
+    @State private var showDisclaimer = false
+    @AppStorage("hasSeenBuddyDisclaimer") private var hasSeenBuddyDisclaimer = false
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
@@ -63,10 +65,25 @@ struct BuddyChatView: View {
                     }
                 )
             }
+            .sheet(isPresented: $showDisclaimer) {
+                BuddyDisclaimerSheet {
+                    hasSeenBuddyDisclaimer = true
+                }
+            }
             .task(id: results.first?.id) {
                 chatState.configure(modelContext: modelContext)
                 let snapshot = results.first?.snapshot()
                 chatState.start(with: snapshot, force: true)
+            }
+            .onAppear {
+                // One-time, first-run disclaimer. Only surface it on
+                // devices where Buddy is actually usable (Apple
+                // Intelligence available) — otherwise the user sees
+                // the unavailable-state first and the sheet would feel
+                // orphaned.
+                if !hasSeenBuddyDisclaimer && chatState.isAvailable {
+                    showDisclaimer = true
+                }
             }
         }
     }
@@ -139,6 +156,22 @@ struct BuddyChatView: View {
                 .foregroundStyle(Theme.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.spacingL)
+
+            // Permanent reminder that this is AI content. Complements
+            // the one-time first-run disclaimer sheet.
+            HStack(spacing: 6) {
+                Image(systemName: "sparkles")
+                    .font(.caption2.weight(.bold))
+                Text("Respuestas generadas por IA. Pueden equivocarse.")
+                    .font(.caption2.weight(.semibold))
+            }
+            .foregroundStyle(Theme.accent)
+            .padding(.horizontal, Theme.spacingM)
+            .padding(.vertical, 6)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(Theme.accent.opacity(0.12))
+            )
         }
         .padding(.bottom, Theme.spacingS)
     }

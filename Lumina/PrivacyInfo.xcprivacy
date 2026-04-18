@@ -6,7 +6,9 @@
         Lumina does not track users, does not collect any data, and does
         not share anything with third parties. The Foundation Models
         framework runs entirely on-device, so AI generation happens
-        without a network call.
+        without a network call. Local notifications are scheduled by
+        iOS's own UserNotifications framework; we never send data to
+        Apple Push Notification service.
     -->
     <key>NSPrivacyTracking</key>
     <false/>
@@ -16,10 +18,15 @@
     <array/>
 
     <!--
-        Declared accessed APIs (Required Reason APIs list, iOS 17+).
-        Lumina uses `@AppStorage` for the onboarding flag, which touches
-        UserDefaults under the hood. Reason CA92.1 = "Access info from
-        the same app", which is exactly what we do.
+        Declared accessed APIs (Required Reason APIs list, iOS 17+):
+
+        - UserDefaults (CA92.1): we use `@AppStorage` for onboarding
+          flags, AI personality preferences, notification toggles, and
+          review-request bookkeeping. CA92.1 = "Access info from the
+          same app", which is exactly the case here.
+        - FileTimestamp (C617.1): PhotoStore reads file creation dates
+          implicitly when computing photo lookup paths under
+          Application Support/Photos/; declaring this defensively.
     -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
@@ -29,6 +36,14 @@
             <key>NSPrivacyAccessedAPITypeReasons</key>
             <array>
                 <string>CA92.1</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
             </array>
         </dict>
     </array>

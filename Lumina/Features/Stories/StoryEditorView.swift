@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import FoundationModels
+import StoreKit
 
 /// Create a new strength-tied story. Supports text, an optional photo
 /// from the user's library, and requires the user to pick a strength.
@@ -13,6 +14,7 @@ import FoundationModels
 struct StoryEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
 
     @State private var storyText: String = ""
     @State private var selectedStrengthID: String = StrengthsCatalog.all.first?.id ?? ""
@@ -219,6 +221,18 @@ struct StoryEditorView: View {
         )
         modelContext.insert(story)
         try? modelContext.save()
+
+        // Schedule "On this day" anniversaries and a 90-day memory
+        // reminder for this story, if the user has enabled the feature.
+        StoryReminderScheduler.schedule(for: story)
+
+        // A saved story counts as a meaningful action for the App Store
+        // review prompt. Guardrails inside the coordinator decide whether
+        // the prompt actually fires.
+        ReviewRequestCoordinator.shared.recordMilestone(.addedStory) {
+            requestReview()
+        }
+
         dismiss()
     }
 }

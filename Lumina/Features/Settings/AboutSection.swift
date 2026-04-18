@@ -22,21 +22,10 @@ struct AboutSection: View {
             }
 
             VStack(alignment: .leading, spacing: Theme.spacingS) {
-                Label("Privacidad", systemImage: "lock.shield.fill")
-                    .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.accent)
-                Text("Lumina procesa todo en tu dispositivo usando Apple Intelligence. Ningún dato personal sale de tu iPhone.")
-                    .font(Theme.captionFont)
-                    .foregroundStyle(Theme.secondaryText)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.vertical, Theme.spacingXS)
-
-            VStack(alignment: .leading, spacing: Theme.spacingS) {
                 Label("Créditos", systemImage: "info.circle.fill")
                     .font(Theme.subheadFont)
                     .foregroundStyle(Theme.gold)
-                Text("Basado en la clasificación VIA de fortalezas de carácter de Christopher Peterson y Martin Seligman. Desarrollado por Walden Dos.")
+                Text("Hecho por Colegio Walden Dos de México.")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -46,12 +35,13 @@ struct AboutSection: View {
             // Bear cameo
             HStack(spacing: Theme.spacingM) {
                 BearImage(name: "bear_07")
-                    .frame(width: 72, height: 72)
+                    .frame(width: 64, height: 64)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Hecho con cariño")
+                    Text("Lumina")
                         .font(Theme.subheadFont)
                         .foregroundStyle(Theme.primaryText)
-                    Text("para Walden Dos")
+                    Text("Colegio Walden Dos de México")
                         .font(Theme.captionFont)
                         .foregroundStyle(Theme.secondaryText)
                 }

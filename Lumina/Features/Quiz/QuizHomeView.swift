@@ -29,6 +29,7 @@ struct QuizHomeView: View {
                 }
             }
             .padding(Theme.spacingL)
+            .adaptiveReadableWidth()
         }
         .background(Theme.heroGradient.ignoresSafeArea())
     }
@@ -36,22 +37,29 @@ struct QuizHomeView: View {
     // MARK: - Header
 
     private var header: some View {
-        VStack(spacing: Theme.spacingM) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Theme.accent.opacity(0.25), Theme.accent.opacity(0)],
-                            center: .center,
-                            startRadius: 10,
-                            endRadius: 180
+        VStack(spacing: Theme.spacingS) {
+            // Hard-centered with Spacers so the bear can't drift even if
+            // its asset has asymmetric transparency. Circle + bear sizes
+            // are tuned so the gradient reads as a soft glow, not a halo.
+            HStack {
+                Spacer(minLength: 0)
+                ZStack {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [Theme.accent.opacity(0.22), Theme.accent.opacity(0)],
+                                center: .center,
+                                startRadius: 8,
+                                endRadius: 120
+                            )
                         )
-                    )
-                    .frame(width: 280, height: 280)
+                        .frame(width: 220, height: 220)
 
-                BearImage(name: "bear_07")
-                    .frame(maxHeight: 180)
-                    .luminaShadow(Theme.shadowCard)
+                    BearImage(name: "bear_07")
+                        .frame(maxHeight: 140)
+                        .luminaShadow(Theme.shadowCard)
+                }
+                Spacer(minLength: 0)
             }
 
             Text("¡Ya completaste tu test!")
