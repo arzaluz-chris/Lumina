@@ -4,11 +4,13 @@ import FoundationModels
 /// Premium multi-page onboarding flow. Introduces Lumina's features with
 /// glassmorphic pages and animated transitions, including a conditional
 /// Apple Intelligence step on compatible devices.
+///
+/// Redesign (2026-04-17): per-page hero gradient backdrop, cleaner page
+/// indicators, CTA driven by the standard ``LuminaButton`` with shimmer.
 struct OnboardingFlowView: View {
     let onComplete: () -> Void
 
     @State private var currentPage = 0
-    @State private var shimmerOffset: CGFloat = -200
 
     private var pages: [OnboardingPage] {
         var result: [OnboardingPage] = [
@@ -32,15 +34,28 @@ struct OnboardingFlowView: View {
 
     private var isLastPage: Bool { currentPage == pages.count - 1 }
 
+    /// Per-page accent tint used for the backdrop gradient and page accent.
+    private var currentAccent: Color {
+        guard currentPage < pages.count else { return Theme.accent }
+        switch pages[currentPage] {
+        case .welcome:             return Theme.accent
+        case .quiz:                return Theme.VirtueCategory.wisdom.color
+        case .strengths:           return Theme.VirtueCategory.humanity.color
+        case .appleIntelligence:   return Theme.VirtueCategory.transcendence.color
+        case .getStarted:          return Theme.gold
+        }
+    }
+
     var body: some View {
         ZStack {
-            // Animated background gradient
+            // Animated per-page backdrop.
             LinearGradient(
-                colors: [Theme.background, Theme.accent.opacity(0.06)],
+                colors: [currentAccent.opacity(0.14), Theme.background],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+            .animation(Theme.AnimationStyle.smooth, value: currentPage)
 
             VStack(spacing: 0) {
                 TabView(selection: $currentPage) {
@@ -51,11 +66,9 @@ struct OnboardingFlowView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
 
-                // Custom page indicators
                 pageIndicators
                     .padding(.bottom, Theme.spacingM)
 
-                // Bottom navigation
                 bottomBar
                     .padding(.horizontal, Theme.spacingL)
                     .padding(.bottom, Theme.spacingL)
@@ -70,9 +83,9 @@ struct OnboardingFlowView: View {
         HStack(spacing: Theme.spacingS) {
             ForEach(0..<pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(index == currentPage ? Theme.accent : Theme.accent.opacity(0.2))
-                    .frame(width: index == currentPage ? 24 : 8, height: 8)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
+                    .fill(index == currentPage ? currentAccent : currentAccent.opacity(0.2))
+                    .frame(width: index == currentPage ? 26 : 8, height: 8)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.75), value: currentPage)
             }
         }
     }
@@ -97,7 +110,8 @@ struct OnboardingFlowView: View {
                 features: [
                     (icon: "clock.fill", title: "~10 minutos", description: "Lo harás ahora para desbloquear la app."),
                     (icon: "lock.fill", title: "100% privado", description: "Tus respuestas nunca salen de tu dispositivo."),
-                ]
+                ],
+                accentOverride: Theme.VirtueCategory.wisdom.color
             )
 
         case .strengths:
@@ -108,7 +122,8 @@ struct OnboardingFlowView: View {
                 features: [
                     (icon: "chart.bar.fill", title: "Ranking personal", description: "De la más fuerte a la menos expresada."),
                     (icon: "star.fill", title: "Fortalezas signature", description: "Las 5 que más te representan."),
-                ]
+                ],
+                accentOverride: Theme.VirtueCategory.humanity.color
             )
 
         case .appleIntelligence(let availability):
@@ -119,6 +134,7 @@ struct OnboardingFlowView: View {
                 bearAsset: "bear_44",
                 title: "Todo listo",
                 subtitle: "Estás a punto de descubrir lo mejor de ti.",
+                accentOverride: Theme.gold,
                 isLastPage: true
             )
         }
@@ -131,58 +147,50 @@ struct OnboardingFlowView: View {
             Spacer()
 
             BearImage(name: "bear_10")
-                .frame(maxHeight: 200)
+                .frame(maxHeight: 220)
+                .luminaShadow(Theme.shadowElevated)
 
-            Spacer()
-                .frame(height: Theme.spacingL)
+            Spacer().frame(height: Theme.spacingL)
 
-            VStack(spacing: Theme.spacingM) {
-                HStack(spacing: Theme.spacingS) {
-                    Image(systemName: "apple.intelligence")
-                        .font(.title2)
-                    Text("Apple Intelligence")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                }
-                .foregroundStyle(Theme.accent)
+            CardContainer(style: .glass, cornerRadius: Theme.heroRadius) {
+                VStack(spacing: Theme.spacingM) {
+                    HStack(spacing: Theme.spacingS) {
+                        Image(systemName: "apple.intelligence")
+                            .font(.title2)
+                        Text("Apple Intelligence")
+                            .font(Theme.heroFont)
+                    }
+                    .foregroundStyle(Theme.VirtueCategory.transcendence.color)
 
-                aiStatusText(availability: availability)
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.secondaryText)
-                    .multilineTextAlignment(.center)
+                    aiStatusText(availability: availability)
+                        .font(Theme.bodyFont)
+                        .foregroundStyle(Theme.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
 
-                if case .unavailable(let reason) = availability {
-                    if case .appleIntelligenceNotEnabled = reason {
-                        LuminaButton(title: "Abrir Ajustes", systemImage: "gear") {
-                            if let url = URL(string: UIApplication.openSettingsURLString) {
-                                UIApplication.shared.open(url)
+                    if case .unavailable(let reason) = availability {
+                        if case .appleIntelligenceNotEnabled = reason {
+                            LuminaButton(title: "Abrir Ajustes", systemImage: "gear") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
                             }
                         }
+                    } else {
+                        HStack(spacing: Theme.spacingS) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.title3)
+                                .foregroundStyle(Theme.success)
+                            Text("Apple Intelligence está activa")
+                                .font(Theme.subheadFont)
+                        }
+                        .padding(Theme.spacingM)
+                        .background(
+                            Capsule().fill(Theme.success.opacity(0.12))
+                        )
                     }
-                } else {
-                    HStack(spacing: Theme.spacingS) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                            .foregroundStyle(.green)
-                        Text("Apple Intelligence está activa")
-                            .font(Theme.subheadFont)
-                    }
-                    .padding(Theme.spacingM)
-                    .background(
-                        RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous)
-                            .fill(.ultraThinMaterial)
-                    )
                 }
             }
-            .padding(Theme.spacingL)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-            )
             .padding(.horizontal, Theme.spacingL)
 
             Spacer()
@@ -210,78 +218,47 @@ struct OnboardingFlowView: View {
 
     // MARK: - Bottom Bar
 
+    @ViewBuilder
     private var bottomBar: some View {
-        Group {
-            if !isLastPage {
-                HStack {
-                    Button("Saltar") {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                            currentPage = pages.count - 1
-                        }
-                    }
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.secondaryText)
-
-                    Spacer()
-
-                    Button {
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
-                            currentPage += 1
-                        }
-                    } label: {
-                        HStack(spacing: Theme.spacingXS) {
-                            Text("Siguiente")
-                            Image(systemName: "arrow.right")
-                        }
-                        .font(Theme.subheadFont)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, Theme.spacingL)
-                        .padding(.vertical, Theme.spacingS + 2)
-                        .background(
-                            Capsule().fill(Theme.accent)
-                        )
+        if !isLastPage {
+            HStack {
+                LuminaGhostButton(title: "Saltar", tint: Theme.secondaryText) {
+                    withAnimation(Theme.AnimationStyle.smooth) {
+                        currentPage = pages.count - 1
                     }
                 }
-            } else {
-                // Final CTA with shimmer effect
+
+                Spacer()
+
                 Button {
-                    onComplete()
+                    withAnimation(Theme.AnimationStyle.smooth) {
+                        currentPage += 1
+                    }
                 } label: {
-                    HStack(spacing: Theme.spacingS) {
+                    HStack(spacing: Theme.spacingXS) {
+                        Text("Siguiente")
                         Image(systemName: "arrow.right")
-                        Text("Comenzar")
                     }
                     .font(Theme.subheadFont)
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, Theme.spacingM)
+                    .padding(.horizontal, Theme.spacingL)
+                    .padding(.vertical, Theme.spacingS + 2)
                     .background(
-                        RoundedRectangle(cornerRadius: Theme.buttonRadius, style: .continuous)
-                            .fill(Theme.accentGradient)
+                        Capsule().fill(currentAccent)
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: Theme.buttonRadius, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [.clear, .white.opacity(0.25), .clear],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .offset(x: shimmerOffset)
-                            .mask(
-                                RoundedRectangle(cornerRadius: Theme.buttonRadius, style: .continuous)
-                            )
-                    )
+                    .luminaShadow(Theme.shadowCard)
                 }
                 .buttonStyle(.plain)
-                .sensoryFeedback(.impact(weight: .heavy), trigger: isLastPage)
-                .onAppear {
-                    withAnimation(.easeInOut(duration: 1.8).repeatForever(autoreverses: false)) {
-                        shimmerOffset = 400
-                    }
-                }
             }
+        } else {
+            LuminaButton(
+                title: "Comenzar",
+                systemImage: "sparkles",
+                size: .large,
+                action: onComplete
+            )
+            .shimmerRepeating(duration: 1.6, restBetweenSweeps: 1.4)
+            .sensoryFeedback(.impact(weight: .heavy), trigger: isLastPage)
         }
     }
 }
