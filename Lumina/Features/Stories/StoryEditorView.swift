@@ -6,6 +6,10 @@ import FoundationModels
 /// Create a new strength-tied story. Supports text, an optional photo
 /// from the user's library, and requires the user to pick a strength.
 /// Includes an AI-powered writing prompt suggestion.
+///
+/// Redesign (2026-04-17): preserves the Form structure but adds a glass
+/// AI prompt card with a soft glow while generating, and a larger photo
+/// preview with rounded corners.
 struct StoryEditorView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -22,7 +26,7 @@ struct StoryEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Fortaleza") {
+                Section {
                     Picker("Fortaleza", selection: $selectedStrengthID) {
                         ForEach(StrengthsCatalog.all) { strength in
                             Label(strength.nameES, systemImage: strength.iconSF)
@@ -30,9 +34,11 @@ struct StoryEditorView: View {
                         }
                     }
                     .pickerStyle(.menu)
+                } header: {
+                    Label("Fortaleza", systemImage: "tag.fill")
                 }
 
-                Section("Tu historia") {
+                Section {
                     if let prompt = aiPrompt {
                         HStack(alignment: .top, spacing: Theme.spacingS) {
                             Image(systemName: "sparkles")
@@ -41,12 +47,24 @@ struct StoryEditorView: View {
                                 .font(Theme.captionFont)
                                 .foregroundStyle(Theme.secondaryText)
                                 .italic()
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .padding(.vertical, Theme.spacingXS)
+                        .padding(Theme.spacingS)
+                        .background(
+                            RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous)
+                                .fill(Theme.gold.opacity(0.10))
+                        )
+                        .aiGlow(isActive: isGeneratingPrompt)
+                        .listRowInsets(EdgeInsets(
+                            top: Theme.spacingS,
+                            leading: Theme.spacingM,
+                            bottom: Theme.spacingS,
+                            trailing: Theme.spacingM
+                        ))
                     }
 
                     TextEditor(text: $storyText)
-                        .frame(minHeight: 160)
+                        .frame(minHeight: 180)
                         .font(Theme.bodyFont)
 
                     Button {
@@ -59,15 +77,17 @@ struct StoryEditorView: View {
                             } else {
                                 Image(systemName: "sparkles")
                             }
-                            Text("Sugiéreme una historia")
+                            Text(aiPrompt == nil ? "Sugiéreme una historia" : "Otra sugerencia")
                         }
-                        .font(Theme.captionFont)
+                        .font(Theme.captionFont.weight(.semibold))
                         .foregroundStyle(Theme.accent)
                     }
                     .disabled(isGeneratingPrompt)
+                } header: {
+                    Label("Tu historia", systemImage: "text.quote")
                 }
 
-                Section("Fecha y hora") {
+                Section {
                     DatePicker(
                         "Fecha",
                         selection: $storyDate,
@@ -75,9 +95,11 @@ struct StoryEditorView: View {
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     .datePickerStyle(.compact)
+                } header: {
+                    Label("Fecha y hora", systemImage: "calendar")
                 }
 
-                Section("Foto (opcional)") {
+                Section {
                     PhotosPicker(selection: $photoItem, matching: .images) {
                         Label(
                             selectedImage == nil ? "Agregar foto" : "Cambiar foto",
@@ -87,10 +109,17 @@ struct StoryEditorView: View {
                     if let selectedImage {
                         Image(uiImage: selectedImage)
                             .resizable()
-                            .scaledToFit()
-                            .frame(maxHeight: 200)
-                            .clipShape(RoundedRectangle(cornerRadius: Theme.chipRadius))
+                            .scaledToFill()
+                            .frame(height: 220)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                            )
                     }
+                } header: {
+                    Label("Foto (opcional)", systemImage: "photo.stack.fill")
                 }
             }
             .navigationTitle("Nueva historia")
@@ -101,6 +130,7 @@ struct StoryEditorView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Guardar", action: save)
+                        .fontWeight(.semibold)
                         .disabled(storyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSaving)
                 }
             }

@@ -2,6 +2,10 @@ import SwiftUI
 
 /// A single chat message bubble with role-specific alignment and color.
 /// Renders markdown formatting for completed assistant messages.
+///
+/// Redesign (2026-04-17): assistant bubbles get an asymmetric bottom-left
+/// tail corner, user bubbles get an asymmetric bottom-right tail and a
+/// gradient fill. Streaming indicator animates with a wave.
 struct ChatBubble: View {
     let message: BuddyChatMessage
 
@@ -10,25 +14,41 @@ struct ChatBubble: View {
             if message.role == .assistant {
                 bubble
                     .background(
-                        RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                        bubbleShape(tail: .bottomLeading)
                             .fill(Theme.cardBackground)
                     )
                     .overlay(
-                        RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
+                        bubbleShape(tail: .bottomLeading)
                             .stroke(Color.primary.opacity(0.06), lineWidth: 1)
                     )
                     .foregroundStyle(Theme.primaryText)
+                    .luminaShadow(Theme.shadowCard)
                 Spacer(minLength: 40)
             } else {
                 Spacer(minLength: 40)
                 bubble
                     .background(
-                        RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous)
-                            .fill(Theme.accent)
+                        bubbleShape(tail: .bottomTrailing)
+                            .fill(Theme.accentGradient)
                     )
                     .foregroundStyle(.white)
+                    .luminaShadow(Theme.shadowCard)
             }
         }
+    }
+
+    private func bubbleShape(tail: UnitPoint) -> some Shape {
+        let big = Theme.cardRadius
+        let small: CGFloat = 8
+        return UnevenRoundedRectangle(
+            cornerRadii: RectangleCornerRadii(
+                topLeading: big,
+                bottomLeading: tail == .bottomLeading ? small : big,
+                bottomTrailing: tail == .bottomTrailing ? small : big,
+                topTrailing: big
+            ),
+            style: .continuous
+        )
     }
 
     private var bubble: some View {
@@ -47,13 +67,7 @@ struct ChatBubble: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             if message.isStreaming && !message.content.isEmpty {
-                HStack(spacing: 4) {
-                    ForEach(0..<3) { i in
-                        Circle()
-                            .frame(width: 5, height: 5)
-                            .opacity(0.4)
-                    }
-                }
+                StreamingDotsIndicator()
             }
         }
         .padding(.horizontal, Theme.spacingM)
@@ -87,5 +101,28 @@ struct ChatBubble: View {
             markdown: message.content,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
         )) ?? AttributedString(message.content)
+    }
+}
+
+/// Three dots that bounce in a wave to indicate streaming.
+private struct StreamingDotsIndicator: View {
+    @State private var phase: Int = 0
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .frame(width: 6, height: 6)
+                    .opacity(phase == i ? 0.95 : 0.35)
+                    .scaleEffect(phase == i ? 1.15 : 1.0)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: phase)
+        .task {
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                await MainActor.run { phase = (phase + 1) % 3 }
+            }
+        }
     }
 }

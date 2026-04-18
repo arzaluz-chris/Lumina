@@ -3,6 +3,9 @@ import SwiftData
 
 /// Sheet listing past Buddy conversations, sorted by most recent first.
 /// Allows loading a past conversation or starting a new one.
+///
+/// Redesign (2026-04-17): each row gets a leading chat icon badge and a
+/// message-count pill; empty state uses ``LuminaEmptyState``.
 struct ConversationListView: View {
     @Query(sort: \Conversation.updatedAt, order: .reverse)
     private var conversations: [Conversation]
@@ -34,6 +37,7 @@ struct ConversationListView: View {
                         dismiss()
                     } label: {
                         Label("Nueva", systemImage: "square.and.pencil")
+                            .foregroundStyle(Theme.accent)
                     }
                 }
             }
@@ -42,26 +46,36 @@ struct ConversationListView: View {
 
     private var list: some View {
         ScrollView {
-            LazyVStack(spacing: Theme.spacingS) {
+            LazyVStack(spacing: Theme.spacingS + 2) {
                 ForEach(conversations) { conversation in
                     Button {
                         onSelect(conversation)
                         dismiss()
                     } label: {
                         CardContainer(padding: Theme.spacingM) {
-                            VStack(alignment: .leading, spacing: Theme.spacingXS) {
-                                Text(conversation.title)
-                                    .font(Theme.subheadFont)
-                                    .foregroundStyle(Theme.primaryText)
-                                    .lineLimit(1)
-                                HStack {
-                                    Text(conversation.updatedAt.formatted(date: .abbreviated, time: .shortened))
-                                        .font(Theme.captionFont)
-                                        .foregroundStyle(Theme.secondaryText)
-                                    Spacer()
-                                    Text("\(conversation.messages.count) mensajes")
-                                        .font(Theme.captionFont)
-                                        .foregroundStyle(Theme.secondaryText)
+                            HStack(alignment: .top, spacing: Theme.spacingM) {
+                                Image(systemName: "bubble.left.and.bubble.right.fill")
+                                    .font(.title3.weight(.semibold))
+                                    .foregroundStyle(Theme.accent)
+                                    .frame(width: 44, height: 44)
+                                    .background(Circle().fill(Theme.accent.opacity(0.14)))
+
+                                VStack(alignment: .leading, spacing: Theme.spacingXS) {
+                                    Text(conversation.title)
+                                        .font(Theme.subheadFont)
+                                        .foregroundStyle(Theme.primaryText)
+                                        .lineLimit(1)
+                                    HStack(spacing: Theme.spacingS) {
+                                        Text(conversation.updatedAt.formatted(date: .abbreviated, time: .shortened))
+                                            .font(Theme.captionFont)
+                                            .foregroundStyle(Theme.secondaryText)
+                                        Spacer()
+                                        LuminaChip(
+                                            title: "\(conversation.messages.count)",
+                                            systemImage: "text.bubble",
+                                            style: .accent
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -82,17 +96,10 @@ struct ConversationListView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Theme.spacingL) {
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 56))
-                .foregroundStyle(Theme.secondaryText)
-            Text("Sin conversaciones aún")
-                .font(Theme.headlineFont)
-            Text("Inicia una nueva conversación con Buddy.")
-                .font(Theme.bodyFont)
-                .foregroundStyle(Theme.secondaryText)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Theme.spacingL)
+        LuminaEmptyState(
+            bearName: "bear_10",
+            title: "Sin conversaciones aún",
+            message: "Inicia una nueva conversación con Buddy desde el botón arriba."
+        )
     }
 }

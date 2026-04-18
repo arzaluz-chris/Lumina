@@ -2,19 +2,22 @@ import SwiftUI
 
 /// First-launch onboarding. Introduces Lumina, sets expectations for the
 /// 48-question test, and funnels the user into the quiz flow.
+///
+/// Note: superseded by ``OnboardingFlowView`` in the current runtime, kept
+/// as a standalone simple variant for previews and possible reuse.
 struct WelcomeView: View {
     let onStart: () -> Void
 
     var body: some View {
         ZStack {
-            Theme.background.ignoresSafeArea()
+            Theme.heroGradient.ignoresSafeArea()
 
             VStack(spacing: Theme.spacingL) {
                 Spacer()
 
                 BearImage(name: "bear_07")
                     .frame(maxHeight: 220)
-                    .accessibilityHidden(true)
+                    .luminaShadow(Theme.shadowElevated)
 
                 VStack(spacing: Theme.spacingS) {
                     Text("Lumina")
@@ -27,7 +30,7 @@ struct WelcomeView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                CardContainer {
+                CardContainer(style: .glass, cornerRadius: Theme.heroRadius) {
                     VStack(alignment: .leading, spacing: Theme.spacingM) {
                         FeatureRow(
                             icon: "pencil.and.list.clipboard",
@@ -49,7 +52,7 @@ struct WelcomeView: View {
 
                 Spacer()
 
-                LuminaButton(title: "Empezar", systemImage: "arrow.right") {
+                LuminaButton(title: "Empezar", systemImage: "arrow.right", size: .large) {
                     onStart()
                 }
             }
@@ -64,11 +67,12 @@ private struct FeatureRow: View {
     let description: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: Theme.spacingM) {
+        HStack(alignment: .center, spacing: Theme.spacingM) {
             Image(systemName: icon)
-                .font(.title2)
+                .font(.title3.weight(.semibold))
                 .foregroundStyle(Theme.accent)
-                .frame(width: 32)
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(Theme.accent.opacity(0.14)))
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(Theme.subheadFont)
                 Text(description)

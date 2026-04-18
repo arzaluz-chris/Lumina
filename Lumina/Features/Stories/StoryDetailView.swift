@@ -3,6 +3,10 @@ import SwiftData
 
 /// Read-only detail view for a single story. Supports deleting the
 /// story from the nav bar.
+///
+/// Redesign (2026-04-17): optional photo takes the lead as a full-bleed
+/// rounded hero; the strength header uses virtue color + gradient badge;
+/// the body text sits in a CardContainer.
 struct StoryDetailView: View {
     let story: Story
 
@@ -18,28 +22,42 @@ struct StoryDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.spacingL) {
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 260)
+                        .clipped()
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.heroRadius, style: .continuous))
+                        .luminaShadow(Theme.shadowElevated)
+                }
+
                 if let strength {
                     HStack(spacing: Theme.spacingM) {
-                        Image(systemName: strength.iconSF)
-                            .font(.title)
-                            .foregroundStyle(Theme.accent)
-                            .frame(width: 56, height: 56)
-                            .background(Circle().fill(Theme.accent.opacity(0.12)))
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(strength.categoryColor.gradient)
+                                .frame(width: 64, height: 64)
+                                .luminaShadow(Theme.shadowCard)
+                            Image(systemName: strength.iconSF)
+                                .font(.title.weight(.semibold))
+                                .foregroundStyle(.white)
+                        }
                         VStack(alignment: .leading, spacing: Theme.spacingXS) {
+                            Text(Theme.virtueCategory(for: strength.id).nameES)
+                                .font(Theme.captionFont.weight(.heavy))
+                                .foregroundStyle(strength.categoryColor)
+                                .textCase(.uppercase)
                             Text(strength.nameES)
-                                .font(Theme.headlineFont)
+                                .font(Theme.heroFont)
+                                .foregroundStyle(Theme.primaryText)
                             Text(story.createdAt.formatted(date: .long, time: .shortened))
                                 .font(Theme.captionFont)
                                 .foregroundStyle(Theme.secondaryText)
                         }
+                        Spacer()
                     }
-                }
-
-                if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius, style: .continuous))
                 }
 
                 CardContainer {
@@ -60,6 +78,7 @@ struct StoryDetailView: View {
                     isShowingDeleteConfirmation = true
                 } label: {
                     Image(systemName: "trash")
+                        .foregroundStyle(Theme.danger)
                 }
             }
         }

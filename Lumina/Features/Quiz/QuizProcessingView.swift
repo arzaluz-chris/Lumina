@@ -3,6 +3,10 @@ import SwiftUI
 /// Intermediate "processing" screen shown after the quiz completes.
 /// Creates anticipation by displaying a pulsing bear mascot and rotating
 /// motivational text before revealing the results.
+///
+/// Redesign (2026-04-17): the bear is wrapped in a soft radial glow, the
+/// progress bar uses ``LuminaProgressBar`` in gold, and the backdrop uses
+/// the hero gradient so this transitions smoothly from the quiz.
 struct QuizProcessingView: View {
     let onFinished: () -> Void
 
@@ -10,40 +14,56 @@ struct QuizProcessingView: View {
     @State private var textIndex = 0
     @State private var progressValue: Double = 0
     @State private var appeared = false
+    @State private var glowOpacity: Double = 0
 
     private let bearAsset = "bear_\(String(format: "%02d", Int.random(in: 1...48)))"
 
     private let messages = [
-        "Analizando tus respuestas...",
-        "Calculando tus fortalezas...",
-        "Preparando tu perfil...",
-        "Casi listo...",
+        "Analizando tus respuestas…",
+        "Calculando tus fortalezas…",
+        "Preparando tu perfil…",
+        "Casi listo…",
     ]
 
     var body: some View {
         VStack(spacing: Theme.spacingXL) {
             Spacer()
 
-            BearImage(name: bearAsset)
-                .frame(maxHeight: 200)
-                .scaleEffect(bearScale)
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Theme.gold.opacity(0.35), Theme.gold.opacity(0)],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 200
+                        )
+                    )
+                    .frame(width: 340, height: 340)
+                    .opacity(glowOpacity)
 
-            VStack(spacing: Theme.spacingS) {
+                BearImage(name: bearAsset)
+                    .frame(maxHeight: 220)
+                    .scaleEffect(bearScale)
+                    .luminaShadow(Theme.shadowElevated)
+            }
+
+            VStack(spacing: Theme.spacingM) {
                 Text(messages[textIndex])
                     .font(Theme.headlineFont)
                     .foregroundStyle(Theme.primaryText)
+                    .multilineTextAlignment(.center)
                     .contentTransition(.numericText())
                     .animation(.easeInOut(duration: 0.3), value: textIndex)
 
-                ProgressView(value: progressValue)
-                    .tint(Theme.accent)
-                    .padding(.horizontal, Theme.spacingXL * 2)
+                LuminaProgressBar(progress: progressValue, tint: Theme.gold, height: 12)
+                    .padding(.horizontal, Theme.spacingXL)
             }
 
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.background.ignoresSafeArea())
+        .background(Theme.heroGradient.ignoresSafeArea())
         .onAppear {
             guard !appeared else { return }
             appeared = true
@@ -52,6 +72,11 @@ struct QuizProcessingView: View {
     }
 
     private func startAnimations() {
+        // Glow fade-in
+        withAnimation(.easeOut(duration: 0.7)) {
+            glowOpacity = 1.0
+        }
+
         // Bear pulse
         withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
             bearScale = 1.05

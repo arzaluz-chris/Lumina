@@ -3,6 +3,10 @@ import SwiftData
 
 /// The app's root view. Shows a splash screen on launch, gates
 /// first-launch onboarding, and hosts the main tabs.
+///
+/// Redesign (2026-04-17): tab icons adopt iOS 26 symbol effects (bounce on
+/// selection), background is softened with the Lumina subtle gradient, and
+/// the initial quiz gate uses the hero gradient for a cohesive feel.
 struct RootView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
     @AppStorage("hasCompletedQuiz") private var hasCompletedQuiz = false
@@ -94,12 +98,7 @@ private struct InitialQuizGateView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Theme.background, Theme.accent.opacity(0.06)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Theme.heroGradient.ignoresSafeArea()
 
             QuizFlowView(onComplete: { _ in onFinished() })
         }

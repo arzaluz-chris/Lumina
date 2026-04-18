@@ -3,6 +3,10 @@ import SwiftData
 
 /// "Historias" tab. Lists the user's strength-tied journal entries in
 /// reverse chronological order with a button to add a new one.
+///
+/// Redesign (2026-04-17): empty state uses ``LuminaEmptyState``; each
+/// story row is rebuilt as a richer card — virtue-colored strength chip,
+/// body preview, and full-width photo thumbnail when present.
 struct StoriesListView: View {
     @Query(sort: \Story.createdAt, order: .reverse) private var stories: [Story]
     @Environment(\.modelContext) private var modelContext
@@ -25,7 +29,8 @@ struct StoriesListView: View {
                     Button {
                         isPresentingEditor = true
                     } label: {
-                        Label("Nueva historia", systemImage: "plus")
+                        Label("Nueva historia", systemImage: "plus.circle.fill")
+                            .foregroundStyle(Theme.accent)
                     }
                 }
             }
@@ -52,23 +57,14 @@ struct StoriesListView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Theme.spacingL) {
-            BearImage(name: "bear_44")
-                .frame(maxHeight: 220)
-            Text("Todavía no tienes historias")
-                .font(Theme.headlineFont)
-            Text("Anota los momentos en los que tus fortalezas se asoman. Aquí vivirán tus relatos.")
-                .font(Theme.bodyFont)
-                .foregroundStyle(Theme.secondaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Theme.spacingL)
-            LuminaButton(title: "Escribir mi primera historia", systemImage: "plus") {
-                isPresentingEditor = true
-            }
-            .padding(.horizontal, Theme.spacingL)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(Theme.spacingL)
+        LuminaEmptyState(
+            bearName: "bear_44",
+            title: "Todavía no tienes historias",
+            message: "Anota los momentos en los que tus fortalezas se asoman. Aquí vivirán tus relatos.",
+            primaryActionTitle: "Escribir mi primera historia",
+            primaryActionIcon: "plus",
+            primaryAction: { isPresentingEditor = true }
+        )
     }
 }
 
@@ -81,49 +77,78 @@ private struct StoryRow: View {
     }
 
     var body: some View {
-        CardContainer(padding: Theme.spacingM) {
-            HStack(alignment: .top, spacing: Theme.spacingM) {
-                if let strength {
-                    Image(systemName: strength.iconSF)
-                        .font(.title2)
-                        .foregroundStyle(strength.categoryColor)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(strength.categoryColor.opacity(0.12)))
-                }
-                VStack(alignment: .leading, spacing: Theme.spacingXS) {
-                    Text(strength?.nameES ?? "Fortaleza")
-                        .font(Theme.subheadFont)
-                        .foregroundStyle(strength?.categoryColor ?? Theme.accent)
-                    Text(story.body.isEmpty ? "Sin descripción" : story.body)
-                        .font(Theme.bodyFont)
-                        .foregroundStyle(Theme.primaryText)
-                        .lineLimit(2)
-                    Text(story.createdAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(Theme.captionFont)
-                        .foregroundStyle(Theme.secondaryText)
-                }
-                Spacer()
+        CardContainer(padding: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 if let thumbnail {
                     Image(uiImage: thumbnail)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous))
+                        .frame(height: 160)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                        .overlay(alignment: .topLeading) {
+                            strengthBadge
+                                .padding(Theme.spacingM)
+                        }
                 } else if story.photoFilename != nil {
-                    RoundedRectangle(cornerRadius: Theme.chipRadius, style: .continuous)
+                    // Photo loading placeholder
+                    RoundedRectangle(cornerRadius: 0)
                         .fill(Theme.cardBackground)
-                        .frame(width: 56, height: 56)
+                        .frame(height: 160)
                         .overlay(
                             Image(systemName: "photo.fill")
+                                .font(.title)
                                 .foregroundStyle(Theme.secondaryText)
                         )
+                        .overlay(alignment: .topLeading) {
+                            strengthBadge
+                                .padding(Theme.spacingM)
+                        }
                 }
+
+                VStack(alignment: .leading, spacing: Theme.spacingS) {
+                    if thumbnail == nil && story.photoFilename == nil {
+                        strengthBadge
+                    }
+
+                    Text(story.body.isEmpty ? "Sin descripción" : story.body)
+                        .font(Theme.bodyFont)
+                        .foregroundStyle(Theme.primaryText)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack {
+                        Image(systemName: "clock")
+                            .font(.caption2)
+                        Text(story.createdAt.formatted(date: .abbreviated, time: .shortened))
+                            .font(Theme.captionFont)
+                    }
+                    .foregroundStyle(Theme.secondaryText)
+                }
+                .padding(Theme.spacingM)
             }
         }
         .task {
             if let filename = story.photoFilename {
                 thumbnail = PhotoStore.loadImage(filename: filename)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var strengthBadge: some View {
+        if let strength {
+            HStack(spacing: Theme.spacingXS) {
+                Image(systemName: strength.iconSF)
+                Text(strength.nameES)
+            }
+            .font(Theme.captionFont.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, Theme.spacingS + 2)
+            .padding(.vertical, Theme.spacingXS + 2)
+            .background(Capsule().fill(strength.categoryColor.gradient))
+            .luminaShadow(Theme.shadowCard)
         }
     }
 }

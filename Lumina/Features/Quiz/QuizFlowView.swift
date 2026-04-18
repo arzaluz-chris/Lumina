@@ -5,6 +5,9 @@ import os
 /// Orchestrates one complete test run: shows the current question,
 /// records answers, persists a `TestResult` on completion, shows a
 /// processing animation, and hands control back via `onComplete`.
+///
+/// Redesign (2026-04-17): progress header uses a pill-based counter and
+/// the new ``LuminaProgressBar``; backdrop is the soft hero gradient.
 struct QuizFlowView: View {
     @State private var state = QuizState()
     @State private var isProcessing = false
@@ -57,25 +60,32 @@ struct QuizFlowView: View {
                 Spacer()
             }
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(Theme.heroGradient.ignoresSafeArea())
         .sensoryFeedback(.success, trigger: state.isComplete)
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: state.currentIndex)
     }
 
     private var progressHeader: some View {
-        VStack(alignment: .leading, spacing: Theme.spacingS) {
-            HStack {
-                Text("Pregunta \(min(state.currentIndex + 1, state.shuffledQuestions.count))")
-                    .font(Theme.subheadFont)
-                    .foregroundStyle(Theme.primaryText)
-                Text("de \(state.shuffledQuestions.count)")
-                    .font(Theme.bodyFont)
-                    .foregroundStyle(Theme.secondaryText)
+        VStack(alignment: .leading, spacing: Theme.spacingS + 2) {
+            HStack(spacing: Theme.spacingS) {
+                LuminaChip(
+                    title: "Pregunta \(min(state.currentIndex + 1, state.shuffledQuestions.count)) de \(state.shuffledQuestions.count)",
+                    systemImage: "list.number",
+                    style: .accent
+                )
                 Spacer()
+                Text(progressPercentString)
+                    .font(Theme.captionFont.weight(.semibold))
+                    .foregroundStyle(Theme.accent)
+                    .contentTransition(.numericText())
+                    .animation(.easeInOut(duration: 0.2), value: state.progress)
             }
-            ProgressView(value: state.progress)
-                .tint(Theme.accent)
+            LuminaProgressBar(progress: state.progress, height: 10)
         }
+    }
+
+    private var progressPercentString: String {
+        "\(Int(round(state.progress * 100)))%"
     }
 
     private func handleAnswer(points: Int) {

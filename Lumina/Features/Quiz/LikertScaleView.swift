@@ -7,6 +7,10 @@ import SwiftUI
 /// Pills can be tapped directly; the parent view also drives a swipe
 /// gesture that previews a value in `hoveredValue` and the matching pill
 /// scales up to full saturation so the drag feels coupled to the row.
+///
+/// Redesign (2026-04-17): pills are larger and more Duolingo-like, colors
+/// come from the shared ``Theme`` semantic tokens so the hue is consistent
+/// with the rest of the app.
 struct LikertScaleView: View {
     let onSelect: (Int) -> Void
     @Binding var hoveredValue: Int?
@@ -24,18 +28,16 @@ struct LikertScaleView: View {
         let color: Color
     }
 
-    // A muted red → green scale. Calibrated so all five pills read well
-    // on the warm cream light background and the dark mode background.
     private let options: [Option] = [
-        Option(id: 1, labelES: "Nada",       color: Color(red: 0.91, green: 0.39, blue: 0.40)),
-        Option(id: 2, labelES: "Poco",       color: Color(red: 0.94, green: 0.58, blue: 0.30)),
-        Option(id: 3, labelES: "Neutral",    color: Color(red: 0.79, green: 0.70, blue: 0.33)),
-        Option(id: 4, labelES: "Bastante",   color: Color(red: 0.53, green: 0.75, blue: 0.43)),
-        Option(id: 5, labelES: "Totalmente", color: Color(red: 0.34, green: 0.69, blue: 0.42)),
+        Option(id: 1, labelES: "Nada",       color: Theme.danger),
+        Option(id: 2, labelES: "Poco",       color: Theme.warning),
+        Option(id: 3, labelES: "Neutral",    color: Theme.neutral),
+        Option(id: 4, labelES: "Bastante",   color: Theme.successSoft),
+        Option(id: 5, labelES: "Totalmente", color: Theme.success),
     ]
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             ForEach(options) { option in
                 Button {
                     lastSelected = option.id
@@ -56,31 +58,31 @@ struct LikertScaleView: View {
         let isActive = hoveredValue == option.id
         VStack(spacing: 2) {
             Text("\(option.id)")
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .font(.system(size: 24, weight: .heavy, design: .rounded))
                 .foregroundStyle(isActive ? .white : option.color)
             Text(option.labelES)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
-                .foregroundStyle(isActive ? .white : option.color.opacity(0.85))
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(isActive ? .white.opacity(0.95) : option.color.opacity(0.85))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
-        .frame(maxWidth: .infinity, minHeight: 64)
+        .frame(maxWidth: .infinity, minHeight: 72)
         .padding(.horizontal, 4)
         .background(
-            Capsule(style: .continuous)
-                .fill(isActive ? option.color : option.color.opacity(0.16))
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(isActive ? AnyShapeStyle(option.color.gradient) : AnyShapeStyle(option.color.opacity(0.14)))
         )
         .overlay(
-            Capsule(style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .stroke(option.color.opacity(isActive ? 0 : 0.45), lineWidth: 1.5)
         )
         .shadow(
             color: option.color.opacity(isActive ? 0.45 : 0),
-            radius: isActive ? 10 : 0,
+            radius: isActive ? 12 : 0,
             x: 0,
-            y: isActive ? 4 : 0
+            y: isActive ? 6 : 0
         )
-        .scaleEffect(isActive ? 1.12 : 1.0)
+        .scaleEffect(isActive ? 1.10 : 1.0)
         .animation(.spring(response: 0.22, dampingFraction: 0.7), value: isActive)
     }
 
@@ -103,14 +105,15 @@ struct LikertScaleView: View {
     }
 }
 
-/// Shared lookup so other views match the pill colors exactly.
+/// Shared lookup so other views match the pill colors exactly. Colors are
+/// sourced from ``Theme`` so the red→green scale matches the rest of the app.
 enum LikertColorScale {
     static let colors: [Color] = [
-        Color(red: 0.91, green: 0.39, blue: 0.40),
-        Color(red: 0.94, green: 0.58, blue: 0.30),
-        Color(red: 0.79, green: 0.70, blue: 0.33),
-        Color(red: 0.53, green: 0.75, blue: 0.43),
-        Color(red: 0.34, green: 0.69, blue: 0.42),
+        Theme.danger,
+        Theme.warning,
+        Theme.neutral,
+        Theme.successSoft,
+        Theme.success,
     ]
 }
 

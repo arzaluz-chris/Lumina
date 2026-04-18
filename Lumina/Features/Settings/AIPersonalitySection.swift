@@ -20,6 +20,7 @@ struct AIPersonalitySection: View {
             }
         } header: {
             Label("Personalidad de Buddy", systemImage: "sparkles")
+                .foregroundStyle(Theme.accent)
         } footer: {
             Text("Estos ajustes definen cómo Buddy responde a tus preguntas. Los cambios aplican en la siguiente conversación.")
         }
