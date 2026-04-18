@@ -16,6 +16,7 @@ struct DataSection: View {
             }
         } header: {
             Label("Datos", systemImage: "externaldrive")
+                .foregroundStyle(Theme.danger)
         } footer: {
             Text("Eliminar los datos borra tus resultados, historias y conversaciones de forma permanente.")
         }

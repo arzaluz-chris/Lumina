@@ -22,6 +22,7 @@ struct NotificationsSection: View {
             }
         } header: {
             Label("Notificaciones", systemImage: "bell.badge")
+                .foregroundStyle(Theme.gold)
         } footer: {
             if manager.isAuthorized {
                 Text("Las notificaciones se envían localmente desde tu dispositivo.")
