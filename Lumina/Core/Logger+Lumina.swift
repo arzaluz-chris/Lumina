@@ -22,4 +22,10 @@ extension Logger {
 
     /// Notification scheduling.
     static let notifications = Logger(subsystem: subsystem, category: "Notifications")
+
+    /// App Store review prompt coordinator.
+    static let review = Logger(subsystem: subsystem, category: "Review")
+
+    /// Home Screen Quick Actions routing.
+    static let quickActions = Logger(subsystem: subsystem, category: "QuickActions")
 }

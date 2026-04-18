@@ -14,6 +14,7 @@ struct SettingsView: View {
                 AIPersonalitySection()
                 NotificationsSection()
                 DataSection()
+                LegalSection()
                 AboutSection()
             }
             .navigationTitle("Ajustes")
@@ -21,6 +22,33 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .background(Theme.heroGradient.ignoresSafeArea())
             .tint(Theme.accent)
+        }
+    }
+}
+
+/// Settings section grouping legal and scientific-sources screens.
+/// Added in 2026-04-18 to pre-empt App Store review friction around
+/// (a) privacy policy access from inside the app and (b) attribution of
+/// the VIA character-strengths framework used as the test's basis.
+private struct LegalSection: View {
+    var body: some View {
+        Section {
+            NavigationLink {
+                PrivacyPolicyView()
+            } label: {
+                Label("Aviso de privacidad", systemImage: "lock.shield.fill")
+            }
+
+            NavigationLink {
+                BibliographyView()
+            } label: {
+                Label("Referencias", systemImage: "book.pages.fill")
+            }
+        } header: {
+            Label("Legal y fuentes", systemImage: "checkmark.seal.fill")
+                .foregroundStyle(Theme.lavender)
+        } footer: {
+            Text("Todo el procesamiento de Lumina ocurre en tu dispositivo. Ningún dato personal sale de tu iPhone o iPad.")
         }
     }
 }

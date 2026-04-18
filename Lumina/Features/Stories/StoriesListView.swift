@@ -53,6 +53,7 @@ struct StoriesListView: View {
                 }
             }
             .padding(Theme.spacingL)
+            .adaptiveReadableWidth()
         }
     }
 

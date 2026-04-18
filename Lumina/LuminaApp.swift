@@ -14,13 +14,35 @@ struct LuminaApp: App {
     /// into every view via `.modelContainer(_:)`.
     private let container: ModelContainer = .luminaContainer()
 
+    /// Bridges UIKit's scene/shortcut lifecycle into SwiftUI so Home
+    /// Screen Quick Actions (long-press the app icon) can route into
+    /// the correct tab on both cold and warm launch.
+    @UIApplicationDelegateAdaptor(LuminaAppDelegate.self) private var appDelegate
+
     init() { }
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(\.aiInsightsProvider, FoundationModelsInsightsProvider())
+                .task {
+                    // Re-arm Story reminders on every launch. A cheap
+                    // no-op when the user hasn't enabled the feature;
+                    // when they have, it catches any state iOS may have
+                    // dropped (e.g., after a device restore).
+                    await rehydrateStoryReminders()
+                }
         }
         .modelContainer(container)
+    }
+
+    @MainActor
+    private func rehydrateStoryReminders() async {
+        let context = container.mainContext
+        let descriptor = FetchDescriptor<Story>(
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        guard let stories = try? context.fetch(descriptor) else { return }
+        StoryReminderScheduler.rehydrate(from: stories)
     }
 }

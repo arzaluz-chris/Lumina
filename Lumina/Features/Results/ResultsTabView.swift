@@ -35,18 +35,54 @@ struct ResultsTabView: View {
             VStack(spacing: Theme.spacingL) {
                 topThreeHero(for: result)
 
-                insightCTA(for: result)
+                if AICapabilityGate.shared.isAvailable {
+                    insightCTA(for: result)
 
-                DailyReflectionCard(result: result)
+                    DailyReflectionCard(result: result)
+                }
 
-                if results.count > 1, let previous = results.dropFirst().first {
-                    EvolutionCard(current: result, previous: previous)
+                if results.count > 1 {
+                    evolutionCTA
                 }
 
                 allStrengthsCard(for: result)
             }
             .padding(Theme.spacingL)
+            .adaptiveReadableWidth()
         }
+    }
+
+    /// Entry point for the full Evolution screen with charts.
+    /// Only rendered when the user has ≥ 2 completed tests.
+    private var evolutionCTA: some View {
+        NavigationLink {
+            EvolutionView(results: results)
+        } label: {
+            CardContainer {
+                HStack(spacing: Theme.spacingM) {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                        .font(.title2.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 52, height: 52)
+                        .background(Circle().fill(Theme.lavender.gradient))
+                        .luminaShadow(Theme.shadowCard)
+
+                    VStack(alignment: .leading, spacing: Theme.spacingXS) {
+                        Text("Ver evolución")
+                            .font(Theme.subheadFont)
+                            .foregroundStyle(Theme.primaryText)
+                        Text("\(results.count) tests · gráficas interactivas")
+                            .font(Theme.captionFont)
+                            .foregroundStyle(Theme.secondaryText)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(Theme.secondaryText)
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private func topThreeHero(for result: TestResult) -> some View {
@@ -275,124 +311,3 @@ private struct DailyReflectionCard: View {
     }
 }
 
-// MARK: - Evolution Card
-
-/// Shows a comparison between the current and previous test when the
-/// user has taken the quiz more than once. Uses Foundation Models to
-/// generate a brief evolution analysis.
-private struct EvolutionCard: View {
-    let current: TestResult
-    let previous: TestResult
-
-    @State private var analysis: String?
-    @State private var isLoading = false
-
-    private func markdownAnalysis(_ text: String) -> AttributedString {
-        (try? AttributedString(
-            markdown: text,
-            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
-        )) ?? AttributedString(text)
-    }
-
-    var body: some View {
-        evolutionContent
-            .onAppear {
-                guard !isLoading, analysis == nil else { return }
-                guard case .available = SystemLanguageModel.default.availability else { return }
-                isLoading = true
-                Task { await generateEvolution() }
-            }
-    }
-
-    @ViewBuilder
-    private var evolutionContent: some View {
-        if let analysis {
-            NavigationLink {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Theme.spacingL) {
-                        Text("Tu evolución")
-                            .font(Theme.titleFont)
-                        Text(markdownAnalysis(analysis))
-                            .font(Theme.bodyFont)
-                            .foregroundStyle(Theme.primaryText)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .padding(Theme.spacingL)
-                }
-                .background(Theme.background.ignoresSafeArea())
-                .navigationTitle("Evolución")
-                .navigationBarTitleDisplayMode(.inline)
-            } label: {
-                CardContainer {
-                    HStack(spacing: Theme.spacingM) {
-                        Image(systemName: "chart.line.uptrend.xyaxis")
-                            .font(.title2.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .frame(width: 52, height: 52)
-                            .background(Circle().fill(Theme.lavender.gradient))
-                            .luminaShadow(Theme.shadowCard)
-
-                        VStack(alignment: .leading, spacing: Theme.spacingXS) {
-                            Text("Cómo has cambiado")
-                                .font(Theme.subheadFont)
-                                .foregroundStyle(Theme.primaryText)
-                            Text("Comparado con tu test anterior")
-                                .font(Theme.captionFont)
-                                .foregroundStyle(Theme.secondaryText)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.callout.weight(.semibold))
-                            .foregroundStyle(Theme.secondaryText)
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-        } else if isLoading {
-            CardContainer {
-                HStack(spacing: Theme.spacingM) {
-                    ProgressView()
-                        .tint(Theme.lavender)
-                    Text("Analizando evolución…")
-                        .font(Theme.captionFont)
-                        .foregroundStyle(Theme.secondaryText)
-                    Spacer()
-                }
-            }
-            .aiGlow(isActive: isLoading)
-        } else {
-            Color.clear.frame(height: 0)
-        }
-    }
-
-    private func generateEvolution() async {
-        let currentSnap = current.snapshot()
-        let previousSnap = previous.snapshot()
-
-        let currentTop = currentSnap.top(5).map { "\($0.strengthName) (\($0.points))" }.joined(separator: ", ")
-        let previousTop = previousSnap.top(5).map { "\($0.strengthName) (\($0.points))" }.joined(separator: ", ")
-
-        do {
-            let session = LanguageModelSession(
-                model: .default,
-                instructions: Instructions(
-                    "Eres un coach de fortalezas VIA. Compara dos resultados de test del mismo usuario " +
-                    "y genera un breve análisis de evolución (3-4 párrafos) en español. " +
-                    "Destaca qué fortalezas crecieron, cuáles bajaron y qué significa. " +
-                    "Sé específico, cálido y evita clichés."
-                )
-            )
-            let prompt = """
-            Test anterior: \(previousTop)
-            Test actual: \(currentTop)
-            Genera el análisis de evolución.
-            """
-            let response = try await session.respond(to: prompt)
-            analysis = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        } catch {
-            Logger.ai.error("Evolution analysis failed: \(error.localizedDescription)")
-        }
-
-        isLoading = false
-    }
-}

@@ -12,6 +12,8 @@ struct RootView: View {
     @AppStorage("hasCompletedQuiz") private var hasCompletedQuiz = false
     @State private var selectedTab: Tab = .test
     @State private var isSplashDone = false
+    @State private var showStoryEditor = false
+    @StateObject private var quickActions = QuickActionsHandler.shared
 
     enum Tab: Hashable {
         case test
@@ -19,6 +21,14 @@ struct RootView: View {
         case stories
         case buddy
         case settings
+    }
+
+    /// The app quietly turns into a 4-tab "no AI" variant on devices
+    /// where Apple Intelligence is structurally unsupported (older
+    /// hardware). On devices where it's just disabled in Settings we
+    /// keep the Buddy tab so the user can act on the CTA inside.
+    private var isBuddyTabVisible: Bool {
+        !AICapabilityGate.shared.shouldHideAIEntirely
     }
 
     var body: some View {
@@ -56,11 +66,13 @@ struct RootView: View {
                 }
                 .tag(Tab.stories)
 
-            BuddyChatView()
-                .tabItem {
-                    Label("Buddy", systemImage: "bubble.left.and.bubble.right.fill")
-                }
-                .tag(Tab.buddy)
+            if isBuddyTabVisible {
+                BuddyChatView()
+                    .tabItem {
+                        Label("Buddy", systemImage: "bubble.left.and.bubble.right.fill")
+                    }
+                    .tag(Tab.buddy)
+            }
 
             SettingsView()
                 .tabItem {
@@ -70,6 +82,9 @@ struct RootView: View {
         }
         .tint(Theme.accent)
         .sensoryFeedback(.selection, trigger: selectedTab)
+        .sheet(isPresented: $showStoryEditor) {
+            StoryEditorView()
+        }
         .fullScreenCover(isPresented: .init(
             get: { !hasCompletedOnboarding },
             set: { if !$0 { hasCompletedOnboarding = true } }
@@ -86,6 +101,34 @@ struct RootView: View {
                 hasCompletedQuiz = true
                 selectedTab = .results
             }
+        }
+        // Cold-launch Quick Action: drain once the tabs exist.
+        .onAppear {
+            if let pending = quickActions.consumePending() {
+                handleQuickAction(pending)
+            }
+        }
+        // Warm-launch Quick Action: router subscribes while mounted.
+        .onReceive(quickActions.actions) { action in
+            handleQuickAction(action)
+        }
+    }
+
+    /// Routes a Home Screen Quick Action to the corresponding tab or
+    /// modal. Kept tiny on purpose — each case either flips
+    /// `selectedTab` or toggles `showStoryEditor`.
+    private func handleQuickAction(_ action: QuickActionsHandler.Action) {
+        switch action {
+        case .test:
+            selectedTab = .test
+        case .buddy:
+            // Fall through to results if Buddy isn't reachable on this device.
+            selectedTab = isBuddyTabVisible ? .buddy : .results
+        case .story:
+            selectedTab = .stories
+            showStoryEditor = true
+        case .results:
+            selectedTab = .results
         }
     }
 }
