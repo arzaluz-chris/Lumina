@@ -2,7 +2,6 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 import FoundationModels
-import os
 
 /// Create a new strength-tied story. Supports text, an optional photo
 /// from the user's library, and requires the user to pick a strength.
@@ -171,19 +170,15 @@ struct StoryEditorView: View {
             let response = try await session.respond(to: "Sugiere una pregunta reflexiva sobre la fortaleza \(strengthName).")
             aiPrompt = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
-            Logger.stories.error("Failed to generate writing prompt: \(error.localizedDescription)")
             aiPrompt = Self.fallbackPrompts[selectedStrengthID]
         }
     }
 
     private func save() {
-        Logger.stories.info("=== SAVING STORY ===")
-        Logger.stories.debug("Strength: \(selectedStrengthID), text length: \(storyText.count), has photo: \(selectedImage != nil)")
         isSaving = true
         var photoFilename: String?
         if let selectedImage {
             photoFilename = try? PhotoStore.save(selectedImage)
-            Logger.stories.info("Photo saved as: \(photoFilename ?? "FAILED")")
         }
 
         let story = Story(
@@ -194,7 +189,6 @@ struct StoryEditorView: View {
         )
         modelContext.insert(story)
         try? modelContext.save()
-        Logger.stories.info("Story saved (id: \(story.id), strength: \(selectedStrengthID))")
         dismiss()
     }
 }

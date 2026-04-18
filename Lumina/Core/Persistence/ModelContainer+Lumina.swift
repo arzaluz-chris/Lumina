@@ -20,19 +20,15 @@ extension ModelContainer {
     /// preventing first-launch crashes in favor of a (very rare)
     /// ephemeral session that the user can report.
     static func luminaContainer() -> ModelContainer {
-        Logger.persistence.info("Creating Lumina SwiftData container (on-disk)...")
         let config = ModelConfiguration(
             "Lumina",
             schema: luminaSchema,
             isStoredInMemoryOnly: false
         )
         do {
-            let container = try ModelContainer(for: luminaSchema, configurations: config)
-            Logger.persistence.info("SwiftData container opened successfully (on-disk)")
-            return container
+            return try ModelContainer(for: luminaSchema, configurations: config)
         } catch {
-            Logger.persistence.error("FAILED to open on-disk SwiftData store: \(error.localizedDescription)")
-            Logger.persistence.warning("Falling back to in-memory store — data will NOT persist across launches")
+            Logger.persistence.error("SwiftData on-disk store failed, using in-memory: \(error.localizedDescription)")
             let fallback = ModelConfiguration(isStoredInMemoryOnly: true)
             return try! ModelContainer(for: luminaSchema, configurations: fallback)
         }

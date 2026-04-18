@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import os
 
 /// The app's root view. Shows a splash screen on launch, gates
 /// first-launch onboarding, and hosts the main tabs.
@@ -34,7 +33,6 @@ struct RootView: View {
     private var mainContent: some View {
         TabView(selection: $selectedTab) {
             TestTabView(onQuizComplete: {
-                Logger.app.info("Quiz complete → switching to Results tab")
                 selectedTab = .results
             })
             .tabItem {
@@ -73,7 +71,6 @@ struct RootView: View {
             set: { if !$0 { hasCompletedOnboarding = true } }
         )) {
             OnboardingFlowView {
-                Logger.app.info("Onboarding completed → forcing quiz")
                 hasCompletedOnboarding = true
             }
         }
@@ -82,16 +79,9 @@ struct RootView: View {
             set: { if !$0 { hasCompletedQuiz = true } }
         )) {
             InitialQuizGateView {
-                Logger.app.info("Initial quiz completed → unlocking tabs")
                 hasCompletedQuiz = true
                 selectedTab = .results
             }
-        }
-        .onChange(of: selectedTab) { old, new in
-            Logger.app.info("Tab changed: \(String(describing: old)) → \(String(describing: new))")
-        }
-        .onAppear {
-            Logger.app.info("RootView appeared — onboarding: \(hasCompletedOnboarding), quiz: \(hasCompletedQuiz)")
         }
     }
 }

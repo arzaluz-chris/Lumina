@@ -24,12 +24,10 @@ final class BuddyChatState {
 
     init() {
         self.service = LuminaBuddyChatService()
-        Logger.buddy.info("BuddyChatState initialized (default service)")
     }
 
     init(service: LuminaBuddyChatService) {
         self.service = service
-        Logger.buddy.info("BuddyChatState initialized (injected service)")
     }
 
     var isAvailable: Bool { service.isAvailable }
@@ -40,11 +38,7 @@ final class BuddyChatState {
     }
 
     func start(with snapshot: TestSnapshot?, force: Bool = false) {
-        if !force && hasStarted {
-            Logger.buddy.debug("start() skipped — already started (force=false)")
-            return
-        }
-        Logger.buddy.info("BuddyChatState.start(force: \(force), hasSnapshot: \(snapshot != nil))")
+        if !force && hasStarted { return }
         let tone = UserDefaults.standard.string(forKey: "aiTone") ?? "calida"
         let length = UserDefaults.standard.string(forKey: "aiLength") ?? "media"
         service.startSession(with: snapshot, tone: tone, length: length)
@@ -62,7 +56,6 @@ final class BuddyChatState {
                 : "Hola, soy Lumina Buddy. Ya conozco tus fortalezas — pregúntame lo que quieras sobre ellas."
             messages.append(BuddyChatMessage(role: .assistant, content: greeting))
         }
-        Logger.buddy.info("Chat session started, greeting appended")
 
         // Generate smart suggestions
         Task {
@@ -72,14 +65,8 @@ final class BuddyChatState {
 
     func send() async {
         let prompt = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !prompt.isEmpty, !isThinking else {
-            Logger.buddy.debug("send() skipped — empty prompt or already thinking")
-            return
-        }
+        guard !prompt.isEmpty, !isThinking else { return }
         messageCount += 1
-        let msgNum = messageCount
-        Logger.buddy.info("=== USER MESSAGE #\(msgNum) ===")
-        Logger.buddy.debug("Prompt (\(prompt.count) chars): \(prompt)")
 
         input = ""
         errorMessage = nil
@@ -94,13 +81,9 @@ final class BuddyChatState {
         streamingChunkCount = 0
         defer { isThinking = false }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
         do {
-            Logger.buddy.debug("Starting stream for message #\(msgNum)...")
             let stream = service.streamResponse(to: prompt)
-            var chunkCount = 0
             for try await partial in stream {
-                chunkCount += 1
                 streamingChunkCount += 1
                 if messages.indices.contains(assistantIndex) {
                     messages[assistantIndex].content = partial
@@ -110,11 +93,6 @@ final class BuddyChatState {
                 messages[assistantIndex].isStreaming = false
             }
             streamingChunkCount = 0
-            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-            let finalLength = messages[assistantIndex].content.count
-            Logger.buddy.info("=== ASSISTANT REPLY #\(msgNum) COMPLETE ===")
-            Logger.buddy.info("Chunks: \(chunkCount), chars: \(finalLength), time: \(elapsed, format: .fixed(precision: 2)) sec")
-            Logger.buddy.debug("Reply preview: \(String(self.messages[assistantIndex].content.prefix(100)))...")
 
             // Persist messages
             persistMessage(role: "user", content: prompt)
@@ -123,9 +101,7 @@ final class BuddyChatState {
             // Auto-rename after enough messages
             await autoRenameIfNeeded()
         } catch {
-            let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-            Logger.buddy.error("=== ASSISTANT REPLY #\(msgNum) FAILED (\(elapsed, format: .fixed(precision: 2)) sec) ===")
-            Logger.buddy.error("Error: \(error.localizedDescription)")
+            Logger.buddy.error("Chat reply failed: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
             if messages.indices.contains(assistantIndex) {
                 messages[assistantIndex].content = "No pude generar una respuesta. Inténtalo de nuevo."
@@ -142,7 +118,6 @@ final class BuddyChatState {
         currentConversation = conversation
         messages.removeAll()
         messageCount = 0
-        Logger.conversations.info("New conversation created: \(conversation.id)")
     }
 
     /// Load a past conversation into the chat.
@@ -159,8 +134,6 @@ final class BuddyChatState {
 
         // Restart the service session so it has context
         service.startSession(with: nil)
-        let msgCount = self.messages.count
-        Logger.conversations.info("Loaded conversation '\(conversation.title)' with \(msgCount) messages")
     }
 
     // MARK: - Private
@@ -172,7 +145,6 @@ final class BuddyChatState {
         conversation.messages.append(record)
         conversation.updatedAt = Date()
         try? ctx.save()
-        Logger.conversations.debug("Persisted \(role) message (\(content.count) chars)")
     }
 
     private func autoRenameIfNeeded() async {
@@ -188,15 +160,12 @@ final class BuddyChatState {
             let title = try await service.generateTitle(for: context)
             conversation.title = title
             try? modelContext?.save()
-            Logger.conversations.info("Auto-renamed conversation to: \(title)")
         } catch {
-            Logger.conversations.error("Auto-rename AI failed: \(error.localizedDescription)")
             // Fallback: use the first user message truncated as title
             if let firstUserMsg = messages.first(where: { $0.role == .user }) {
                 let fallback = String(firstUserMsg.content.prefix(40))
                 conversation.title = fallback.count < firstUserMsg.content.count ? fallback + "…" : fallback
                 try? modelContext?.save()
-                Logger.conversations.info("Auto-renamed with fallback: \(conversation.title)")
             }
         }
     }

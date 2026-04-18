@@ -1,43 +1,25 @@
 import os
 
-/// Centralized loggers for Lumina, one per subsystem area.
-///
-/// Uses Apple's structured `os.Logger` so messages show up in Console.app
-/// with filterable subsystem + category. Levels:
-///   .debug   → verbose, stripped in Release
-///   .info    → notable events (session start, generation complete)
-///   .error   → failures that need attention
-///   .fault   → programmer errors / impossible states
+/// Centralized loggers for Lumina — error-level only to avoid
+/// os.Logger quarantining due to high volume.
 extension Logger {
     private static let subsystem = "com.christian-arzaluz.Lumina"
 
-    /// Foundation Models insights + Generable schema.
+    /// Foundation Models insights + daily reflection.
     static let ai = Logger(subsystem: subsystem, category: "AI")
 
-    /// Lumina Buddy chat service + streaming.
+    /// Lumina Buddy chat service.
     static let buddy = Logger(subsystem: subsystem, category: "Buddy")
 
-    /// Quiz flow: answers, scoring, test completion.
+    /// Quiz flow and test persistence.
     static let quiz = Logger(subsystem: subsystem, category: "Quiz")
 
-    /// SwiftData container + model operations.
+    /// SwiftData container.
     static let persistence = Logger(subsystem: subsystem, category: "Persistence")
 
-    /// PhotoStore: save / load / delete.
-    static let photos = Logger(subsystem: subsystem, category: "Photos")
-
-    /// Stories feature: create, detail, delete.
-    static let stories = Logger(subsystem: subsystem, category: "Stories")
-
-    /// Insights view: cache, generation, UI state.
+    /// Insights view: cache + generation.
     static let insights = Logger(subsystem: subsystem, category: "Insights")
 
-    /// App lifecycle, onboarding, tab navigation.
-    static let app = Logger(subsystem: subsystem, category: "App")
-
-    /// Buddy conversation persistence and auto-rename.
-    static let conversations = Logger(subsystem: subsystem, category: "Conversations")
-
-    /// Notification scheduling and permissions.
+    /// Notification scheduling.
     static let notifications = Logger(subsystem: subsystem, category: "Notifications")
 }

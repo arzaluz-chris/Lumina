@@ -1,6 +1,5 @@
 import Foundation
 import UIKit
-import os
 
 /// File-based storage for Story photo attachments.
 ///
@@ -40,41 +39,27 @@ enum PhotoStore {
     /// on `Story.photoFilename`.
     @discardableResult
     static func save(_ image: UIImage) throws -> String {
-        Logger.photos.info("Saving photo — original size: \(Int(image.size.width))x\(Int(image.size.height))")
         let scaled = image.downscaled(maxDimension: 2048)
-        Logger.photos.debug("After downscale: \(Int(scaled.size.width))x\(Int(scaled.size.height))")
         guard let data = scaled.jpegData(compressionQuality: 0.85) else {
-            Logger.photos.error("JPEG encoding failed")
             throw Error.encodingFailed
         }
         let filename = "\(UUID().uuidString).jpg"
         let url = try photosDirectory().appendingPathComponent(filename)
         try data.write(to: url, options: .atomic)
-        Logger.photos.info("Photo saved: \(filename) (\(data.count) bytes)")
         return filename
     }
 
     static func loadImage(filename: String) -> UIImage? {
-        Logger.photos.debug("Loading photo: \(filename)")
-        guard let dir = try? photosDirectory() else {
-            Logger.photos.error("Cannot access photos directory")
-            return nil
-        }
+        guard let dir = try? photosDirectory() else { return nil }
         let url = dir.appendingPathComponent(filename)
-        guard let data = try? Data(contentsOf: url) else {
-            Logger.photos.warning("Photo not found on disk: \(filename)")
-            return nil
-        }
-        Logger.photos.info("Photo loaded: \(filename) (\(data.count) bytes)")
+        guard let data = try? Data(contentsOf: url) else { return nil }
         return UIImage(data: data)
     }
 
     static func delete(filename: String) {
-        Logger.photos.info("Deleting photo: \(filename)")
         guard let dir = try? photosDirectory() else { return }
         let url = dir.appendingPathComponent(filename)
         try? FileManager.default.removeItem(at: url)
-        Logger.photos.debug("Photo deleted (or already missing): \(filename)")
     }
 }
 

@@ -86,27 +86,23 @@ struct QuizFlowView: View {
     }
 
     private func save() {
-        Logger.quiz.info("=== SAVING TEST RESULT ===")
         let result = TestResult()
         let allScores = state.computeScores()
         for (strengthID, points) in allScores {
             let score = StrengthScore(strengthID: strengthID, points: points)
             result.scores.append(score)
         }
-        Logger.quiz.info("TestResult created with \(result.scores.count) scores")
         modelContext.insert(result)
         do {
             try modelContext.save()
-            Logger.quiz.info("TestResult saved to SwiftData successfully (id: \(result.id))")
         } catch {
-            Logger.quiz.error("FAILED to save TestResult: \(error.localizedDescription)")
+            Logger.quiz.error("Failed to save TestResult: \(error.localizedDescription)")
         }
         savedResult = result
         // Schedule quiz re-test reminder if enabled
         if UserDefaults.standard.bool(forKey: "quizReminderEnabled") {
             NotificationManager.shared.scheduleQuizReminder(lastCompletedAt: result.completedAt)
         }
-        Logger.quiz.info("Quiz complete → showing processing animation")
         withAnimation(.easeInOut(duration: 0.3)) {
             isProcessing = true
         }

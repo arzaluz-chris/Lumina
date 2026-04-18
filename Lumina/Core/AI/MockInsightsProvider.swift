@@ -1,5 +1,4 @@
 import Foundation
-import os
 
 /// Deterministic stand-in for ``FoundationModelsInsightsProvider``.
 struct MockInsightsProvider: AIInsightsProviding {
@@ -7,10 +6,7 @@ struct MockInsightsProvider: AIInsightsProviding {
     var unavailableReason: String? { nil }
 
     func generateInsight(for snapshot: TestSnapshot) async throws -> StrengthInsight {
-        Logger.ai.info("[MOCK] generateInsight called — returning canned data after 300ms delay")
-        Logger.ai.debug("[MOCK] Snapshot top 5: \(snapshot.top(5).map(\.strengthName).joined(separator: ", "))")
         try? await Task.sleep(for: .milliseconds(300))
-        Logger.ai.info("[MOCK] generateInsight complete")
 
         return StrengthInsight(
             summary: "Tu perfil refleja a alguien que combina una mirada curiosa con una profunda calidez humana. Usas el aprendizaje como motor y la gratitud como brújula.",

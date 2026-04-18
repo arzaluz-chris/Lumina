@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import os
 
 /// Settings section for data management — export and delete.
 struct DataSection: View {
@@ -41,8 +40,6 @@ struct DataSection: View {
             try modelContext.delete(model: AIInsight.self)
             try modelContext.save()
             hasCompletedOnboarding = false
-        } catch {
-            Logger.persistence.error("Failed to delete all data: \(error.localizedDescription)")
-        }
+        } catch { }
     }
 }

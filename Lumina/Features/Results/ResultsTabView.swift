@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import FoundationModels
+import os
 
 /// Root of the "Mis 24" tab. Renders the 24 ranked strengths from the
 /// latest `TestResult`, a CTA to open the AI-generated insight, a daily
@@ -140,6 +141,17 @@ private struct DailyReflectionCard: View {
     }
 
     var body: some View {
+        cardContent
+            .onAppear {
+                guard !isLoading, !isToday else { return }
+                guard case .available = SystemLanguageModel.default.availability else { return }
+                isLoading = true
+                Task { await generateReflection() }
+            }
+    }
+
+    @ViewBuilder
+    private var cardContent: some View {
         if !cachedText.isEmpty && isToday {
             CardContainer {
                 VStack(alignment: .leading, spacing: Theme.spacingS) {
@@ -166,19 +178,11 @@ private struct DailyReflectionCard: View {
                 }
             }
         } else {
-            // Generate on appear
             Color.clear.frame(height: 0)
-                .task { await generateReflection() }
         }
     }
 
     private func generateReflection() async {
-        guard !isToday else { return }
-        guard case .available = SystemLanguageModel.default.availability else { return }
-
-        isLoading = true
-        defer { isLoading = false }
-
         let snapshot = result.snapshot()
         let top3 = snapshot.top(3).map(\.strengthName).joined(separator: ", ")
 
@@ -195,8 +199,10 @@ private struct DailyReflectionCard: View {
             cachedText = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
             cachedDate = todayKey
         } catch {
-            // Silently fail — this is a nice-to-have feature
+            Logger.ai.error("Daily reflection failed: \(error.localizedDescription)")
         }
+
+        isLoading = false
     }
 }
 
@@ -220,6 +226,17 @@ private struct EvolutionCard: View {
     }
 
     var body: some View {
+        evolutionContent
+            .onAppear {
+                guard !isLoading, analysis == nil else { return }
+                guard case .available = SystemLanguageModel.default.availability else { return }
+                isLoading = true
+                Task { await generateEvolution() }
+            }
+    }
+
+    @ViewBuilder
+    private var evolutionContent: some View {
         if let analysis {
             NavigationLink {
                 ScrollView {
@@ -271,16 +288,10 @@ private struct EvolutionCard: View {
             }
         } else {
             Color.clear.frame(height: 0)
-                .task { await generateEvolution() }
         }
     }
 
     private func generateEvolution() async {
-        guard case .available = SystemLanguageModel.default.availability else { return }
-
-        isLoading = true
-        defer { isLoading = false }
-
         let currentSnap = current.snapshot()
         let previousSnap = previous.snapshot()
 
@@ -305,7 +316,9 @@ private struct EvolutionCard: View {
             let response = try await session.respond(to: prompt)
             analysis = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
         } catch {
-            // Silently fail
+            Logger.ai.error("Evolution analysis failed: \(error.localizedDescription)")
         }
+
+        isLoading = false
     }
 }

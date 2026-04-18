@@ -21,9 +21,8 @@ final class NotificationManager {
         let center = UNUserNotificationCenter.current()
         do {
             isAuthorized = try await center.requestAuthorization(options: [.alert, .badge, .sound])
-            Logger.notifications.info("Notification permission \(self.isAuthorized ? "granted" : "denied")")
         } catch {
-            Logger.notifications.error("Notification permission request failed: \(error.localizedDescription)")
+            Logger.notifications.error("Notification permission failed: \(error.localizedDescription)")
         }
     }
 
@@ -60,10 +59,7 @@ final class NotificationManager {
     func scheduleDailyTip(enabled: Bool) {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ["dailyTip"])
-        guard enabled else {
-            Logger.notifications.info("Daily tips disabled")
-            return
-        }
+        guard enabled else { return }
 
         var dateComponents = DateComponents()
         dateComponents.hour = 9
@@ -77,7 +73,6 @@ final class NotificationManager {
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         let request = UNNotificationRequest(identifier: "dailyTip", content: content, trigger: trigger)
         center.add(request)
-        Logger.notifications.info("Daily tip scheduled at 9:00 AM")
     }
 
     // MARK: - Weekly Story Prompt
@@ -85,10 +80,7 @@ final class NotificationManager {
     func scheduleWeeklyStoryPrompt(enabled: Bool) {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: ["storyPrompt"])
-        guard enabled else {
-            Logger.notifications.info("Weekly story prompts disabled")
-            return
-        }
+        guard enabled else { return }
 
         var dateComponents = DateComponents()
         dateComponents.weekday = 1  // Sunday
@@ -103,7 +95,6 @@ final class NotificationManager {
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
         let request = UNNotificationRequest(identifier: "storyPrompt", content: content, trigger: trigger)
         center.add(request)
-        Logger.notifications.info("Weekly story prompt scheduled for Sundays at 6:00 PM")
     }
 
     // MARK: - Quiz Reminder
@@ -125,6 +116,5 @@ final class NotificationManager {
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
         let request = UNNotificationRequest(identifier: "quizReminder", content: content, trigger: trigger)
         center.add(request)
-        Logger.notifications.info("Quiz reminder scheduled for \(reminderDate.formatted())")
     }
 }

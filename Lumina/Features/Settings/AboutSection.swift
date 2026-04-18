@@ -1,5 +1,4 @@
 import SwiftUI
-import os
 
 /// Settings section with app info, privacy, and credits.
 struct AboutSection: View {

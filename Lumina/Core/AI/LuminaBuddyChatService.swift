@@ -12,22 +12,14 @@ final class LuminaBuddyChatService {
 
     init(model: SystemLanguageModel = .default) {
         self.model = model
-        Logger.buddy.info("LuminaBuddyChatService initialized")
-        Logger.buddy.debug("Model availability: \(String(describing: model.availability))")
     }
 
     var isAvailable: Bool {
-        let available = model.availability
-        if case .available = available {
-            Logger.buddy.debug("Buddy availability check: AVAILABLE")
-            return true
-        }
-        Logger.buddy.info("Buddy availability check: NOT AVAILABLE (\(String(describing: available)))")
+        if case .available = model.availability { return true }
         return false
     }
 
     func startSession(with snapshot: TestSnapshot?, tone: String = "calida", length: String = "media") {
-        Logger.buddy.info("=== BUDDY SESSION START (tone: \(tone), length: \(length)) ===")
         turnCount = 0
 
         let contextLine: String
@@ -43,11 +35,8 @@ final class LuminaBuddyChatService {
             Fortalezas principales: \(top).
             Áreas de crecimiento: \(bottom).
             """
-            Logger.buddy.info("Session seeded with user strengths — top: \(top)")
-            Logger.buddy.debug("Growth areas: \(bottom)")
         } else {
             contextLine = "El usuario aún no ha completado el test."
-            Logger.buddy.info("Session started WITHOUT test results (user hasn't completed quiz)")
         }
 
         let toneInstruction: String
@@ -78,53 +67,26 @@ final class LuminaBuddyChatService {
         """)
 
         session = LanguageModelSession(model: model, instructions: instructions)
-        Logger.buddy.info("LanguageModelSession created successfully")
-        Logger.buddy.debug("Instructions length: \(String(describing: instructions).count) chars")
     }
 
     func streamResponse(to prompt: String) -> AsyncThrowingStream<String, Swift.Error> {
         turnCount += 1
-        let currentTurn = turnCount
-        Logger.buddy.info("=== BUDDY STREAM START (turn \(currentTurn)) ===")
-        Logger.buddy.debug("User prompt (\(prompt.count) chars): \(prompt)")
 
         return AsyncThrowingStream { continuation in
             Task { @MainActor in
                 guard let session else {
-                    Logger.buddy.error("STREAM FAILED: no session — call startSession() first")
                     continuation.finish(throwing: BuddyError.noSession)
                     return
                 }
 
-                let startTime = CFAbsoluteTimeGetCurrent()
-                var tokenCount = 0
-                var lastContent = ""
-
                 do {
-                    Logger.buddy.debug("Calling session.streamResponse(to:)...")
                     let stream = session.streamResponse(to: prompt)
                     for try await partial in stream {
-                        tokenCount += 1
-                        lastContent = partial.content
                         continuation.yield(partial.content)
-                        if tokenCount == 1 {
-                            let ttft = CFAbsoluteTimeGetCurrent() - startTime
-                            Logger.buddy.info("First token received after \(ttft, format: .fixed(precision: 2)) seconds")
-                        }
-                        if tokenCount % 20 == 0 {
-                            Logger.buddy.debug("Streaming... \(tokenCount) chunks, \(lastContent.count) chars so far")
-                        }
                     }
-                    let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-                    Logger.buddy.info("=== BUDDY STREAM COMPLETE (turn \(currentTurn)) ===")
-                    Logger.buddy.info("Total: \(tokenCount) chunks, \(lastContent.count) chars, \(elapsed, format: .fixed(precision: 2)) seconds")
-                    Logger.buddy.debug("Response preview: \(String(lastContent.prefix(120)))...")
                     continuation.finish()
                 } catch {
-                    let elapsed = CFAbsoluteTimeGetCurrent() - startTime
-                    Logger.buddy.error("=== BUDDY STREAM FAILED (turn \(currentTurn), \(elapsed, format: .fixed(precision: 2)) seconds) ===")
-                    Logger.buddy.error("Error: \(error.localizedDescription)")
-                    Logger.buddy.error("Tokens received before failure: \(tokenCount)")
+                    Logger.buddy.error("Buddy stream failed: \(error.localizedDescription)")
                     continuation.finish(throwing: error)
                 }
             }
@@ -133,7 +95,6 @@ final class LuminaBuddyChatService {
 
     /// Generates a short title for a conversation based on its content.
     func generateTitle(for context: String) async throws -> String {
-        Logger.buddy.info("Generating conversation title...")
         let titleSession = LanguageModelSession(
             model: model,
             instructions: Instructions(
@@ -144,14 +105,11 @@ final class LuminaBuddyChatService {
             )
         )
         let response = try await titleSession.respond(to: "Resume el tema de esta conversación:\n\(context)")
-        let title = response.content.trimmingCharacters(in: .whitespacesAndNewlines)
-        Logger.buddy.info("Generated title: \(title)")
-        return title
+        return response.content.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// Generates contextual prompt suggestions based on user strengths.
     func generateSuggestions(for snapshot: TestSnapshot?) async -> [String] {
-        Logger.buddy.info("Generating smart suggestions...")
         let fallback = [
             "¿Qué son las fortalezas VIA?",
             "¿Cómo puedo usar mis fortalezas en el día a día?",
@@ -160,7 +118,6 @@ final class LuminaBuddyChatService {
         ]
 
         guard let snapshot, !snapshot.rankedEntries.isEmpty else {
-            Logger.buddy.debug("No snapshot available — returning static suggestions")
             return fallback
         }
 
@@ -181,10 +138,9 @@ final class LuminaBuddyChatService {
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
             let suggestions = Array(lines.prefix(4))
-            Logger.buddy.info("Generated \(suggestions.count) suggestions")
             return suggestions.isEmpty ? fallback : suggestions
         } catch {
-            Logger.buddy.error("Failed to generate suggestions: \(error.localizedDescription)")
+            Logger.buddy.error("Suggestions generation failed: \(error.localizedDescription)")
             return fallback
         }
     }

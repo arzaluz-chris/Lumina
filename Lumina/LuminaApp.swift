@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import os
 
 @main
 struct LuminaApp: App {
@@ -15,12 +14,7 @@ struct LuminaApp: App {
     /// into every view via `.modelContainer(_:)`.
     private let container: ModelContainer = .luminaContainer()
 
-    init() {
-        Logger.app.info("=== LUMINA APP LAUNCH ===")
-        Logger.app.info("Bundle: \(Bundle.main.bundleIdentifier ?? "unknown")")
-        Logger.app.info("Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?") build \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?")")
-        Logger.app.debug("SwiftData container ready")
-    }
+    init() { }
 
     var body: some Scene {
         WindowGroup {
