@@ -188,6 +188,9 @@
     "Cualquier duda sobre privacidad o tratamiento de datos: %@." : {
 
     },
+    "Cuando adjuntas una foto a una historia, la guardamos dentro del contenedor privado de la aplicación. Nunca se envía fuera de tu dispositivo. Al borrar la historia, la foto se elimina del almacenamiento de la app." : {
+
+    },
     "Cuanto más arriba, mejor posición: #1 es la fortaleza más expresada en cada test." : {
 
     },
@@ -287,16 +290,10 @@
     "Hoy hace un año…" : {
 
     },
-    "La función \"Leer en voz alta\" reproduce preguntas, historias y respuestas con la voz del sistema (AVSpeechSynthesizer). Todo el proceso ocurre en tu dispositivo: Lumina no enciende el micrófono, no graba audio y no envía texto a ningún servidor. Puedes desactivar la función en Ajustes → Accesibilidad." : {
-
-    },
     "Larga" : {
 
     },
     "Las respuestas de análisis, las reflexiones diarias y las conversaciones con Buddy se generan con Apple Intelligence y el framework Foundation Models, que se ejecutan completamente en tu iPhone o iPad. Apple no recibe ni almacena estos datos; nosotros tampoco." : {
-
-    },
-    "Lectura en voz alta" : {
 
     },
     "Lee el texto con la voz del sistema." : {
@@ -393,9 +390,6 @@
 
     },
     "Otra sugerencia" : {
-
-    },
-    "Para adjuntar una foto a una historia usamos el selector de Apple (PhotosPicker), que te permite elegir una imagen sin que Lumina acceda al resto de tu fototeca. La foto seleccionada se guarda dentro del contenedor privado de la aplicación y nunca se envía fuera de tu dispositivo. Al borrar la historia, la foto se elimina del almacenamiento de la app." : {
 
     },
     "Para niños y personas que aún no leen: Lumina puede leer en voz alta las preguntas, historias y respuestas de Buddy. También funciona con VoiceOver." : {
