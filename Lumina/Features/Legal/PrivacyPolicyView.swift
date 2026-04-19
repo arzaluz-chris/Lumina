@@ -32,13 +32,18 @@ struct PrivacyPolicyView: View {
                 )
 
                 section(
+                    title: "Lectura en voz alta",
+                    body: "La función \"Leer en voz alta\" reproduce preguntas, historias y respuestas con la voz del sistema (AVSpeechSynthesizer). Todo el proceso ocurre en tu dispositivo: Lumina no enciende el micrófono, no graba audio y no envía texto a ningún servidor. Puedes desactivar la función en Ajustes → Accesibilidad."
+                )
+
+                section(
                     title: "Notificaciones locales",
                     body: "Si las activas, Lumina programa recordatorios (tips diarios, aniversarios de historias, re-test) usando el sistema de notificaciones locales de iOS. La decisión de entregarlas la toma tu dispositivo; no hay servidores de push involucrados."
                 )
 
                 section(
                     title: "Fotos",
-                    body: "Cuando adjuntas una foto a una historia, la guardamos dentro del contenedor privado de la aplicación. Nunca se envía fuera de tu dispositivo. Al borrar la historia, la foto se elimina del almacenamiento de la app."
+                    body: "Para adjuntar una foto a una historia usamos el selector de Apple (PhotosPicker), que te permite elegir una imagen sin que Lumina acceda al resto de tu fototeca. La foto seleccionada se guarda dentro del contenedor privado de la aplicación y nunca se envía fuera de tu dispositivo. Al borrar la historia, la foto se elimina del almacenamiento de la app."
                 )
 
                 section(

@@ -12,17 +12,28 @@ struct ChatBubble: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: Theme.spacingS) {
             if message.role == .assistant {
-                bubble
-                    .background(
-                        bubbleShape(tail: .bottomLeading)
-                            .fill(Theme.cardBackground)
-                    )
-                    .overlay(
-                        bubbleShape(tail: .bottomLeading)
-                            .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-                    )
-                    .foregroundStyle(Theme.primaryText)
-                    .luminaShadow(Theme.shadowCard)
+                VStack(alignment: .leading, spacing: Theme.spacingXS) {
+                    bubble
+                        .background(
+                            bubbleShape(tail: .bottomLeading)
+                                .fill(Theme.cardBackground)
+                        )
+                        .overlay(
+                            bubbleShape(tail: .bottomLeading)
+                                .stroke(Color.primary.opacity(0.06), lineWidth: 1)
+                        )
+                        .foregroundStyle(Theme.primaryText)
+                        .luminaShadow(Theme.shadowCard)
+                    // Only offer read-aloud once the message has finished
+                    // streaming — partial tokens make the voice stutter
+                    // and mispronounce truncated words.
+                    if !message.isStreaming && !message.content.isEmpty {
+                        ReadAloudButton(text: message.content, size: .small)
+                            .padding(.leading, Theme.spacingS)
+                    }
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Buddy dice: \(message.content)")
                 Spacer(minLength: 40)
             } else {
                 Spacer(minLength: 40)
@@ -33,6 +44,8 @@ struct ChatBubble: View {
                     )
                     .foregroundStyle(.white)
                     .luminaShadow(Theme.shadowCard)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Tú dijiste: \(message.content)")
             }
         }
     }

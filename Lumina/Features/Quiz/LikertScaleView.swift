@@ -46,7 +46,9 @@ struct LikertScaleView: View {
                     pill(for: option)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Respuesta \(option.id) de 5: \(option.labelES)")
+                .accessibilityLabel("\(option.labelES)")
+                .accessibilityValue("Opción \(option.id) de 5")
+                .accessibilityHint("Toca para responder con \(option.labelES)")
             }
         }
         .frame(maxWidth: .infinity)

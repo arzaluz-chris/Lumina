@@ -61,10 +61,20 @@ struct StoryDetailView: View {
                 }
 
                 CardContainer {
-                    Text(story.body)
-                        .font(Theme.bodyFont)
-                        .foregroundStyle(Theme.primaryText)
-                        .fixedSize(horizontal: false, vertical: true)
+                    VStack(alignment: .leading, spacing: Theme.spacingM) {
+                        Text(story.body)
+                            .font(Theme.bodyFont)
+                            .foregroundStyle(Theme.primaryText)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        HStack {
+                            Spacer()
+                            ReadAloudButton(
+                                text: story.body,
+                                tint: strength?.categoryColor ?? Theme.accent
+                            )
+                        }
+                    }
                 }
             }
             .padding(Theme.spacingL)

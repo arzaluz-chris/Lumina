@@ -98,6 +98,8 @@ struct StrengthDetailView: View {
                 LuminaProgressBar(progress: animatedFill, tint: color, height: 10)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Tu puntaje en \(strength.nameES): \(points) de \(QuestionsCatalog.maxScorePerStrength)")
     }
 
     // MARK: - Questions card
@@ -122,6 +124,11 @@ struct StrengthDetailView: View {
                                 .foregroundStyle(Theme.primaryText)
                                 .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 0)
+                            ReadAloudButton(
+                                text: question.textES,
+                                tint: strength.categoryColor,
+                                size: .small
+                            )
                         }
                         .padding(Theme.spacingM)
                         .background(

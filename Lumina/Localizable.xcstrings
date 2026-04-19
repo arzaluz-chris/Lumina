@@ -25,6 +25,9 @@
     "#%lld" : {
 
     },
+    "%@" : {
+
+    },
     "%lld" : {
 
     },
@@ -48,6 +51,9 @@
 
     },
     "+%lld" : {
+
+    },
+    "Accesibilidad" : {
 
     },
     "Acerca de" : {
@@ -113,6 +119,9 @@
     "Buddy" : {
 
     },
+    "Buddy dice: %@" : {
+
+    },
     "Buddy no es psicólogo, médico ni orientador. Úsalo como compañero de reflexión; para decisiones importantes busca a un experto de confianza." : {
 
     },
@@ -167,6 +176,9 @@
     "Conversaciones" : {
 
     },
+    "Conversaciones anteriores" : {
+
+    },
     "Corta" : {
 
     },
@@ -191,6 +203,9 @@
     "Descubre tus fortalezas de carácter" : {
 
     },
+    "Detener lectura" : {
+
+    },
     "Eliminar" : {
 
     },
@@ -204,6 +219,9 @@
 
     },
     "Entendido" : {
+
+    },
+    "Enviar mensaje" : {
 
     },
     "Esta acción no se puede deshacer. Se borrarán tus resultados, historias y conversaciones." : {
@@ -276,6 +294,15 @@
 
     },
     "Las respuestas de análisis, las reflexiones diarias y las conversaciones con Buddy se generan con Apple Intelligence y el framework Foundation Models, que se ejecutan completamente en tu iPhone o iPad. Apple no recibe ni almacena estos datos; nosotros tampoco." : {
+
+    },
+    "Lee el texto con la voz del sistema." : {
+
+    },
+    "Leer en voz alta" : {
+
+    },
+    "Leer preguntas del test automáticamente" : {
 
     },
     "Legal y fuentes" : {
@@ -353,10 +380,19 @@
     "Nueva" : {
 
     },
+    "Nueva conversación" : {
+
+    },
     "Nueva historia" : {
 
     },
+    "Opción %lld de 5" : {
+
+    },
     "Otra sugerencia" : {
+
+    },
+    "Para niños y personas que aún no leen: Lumina puede leer en voz alta las preguntas, historias y respuestas de Buddy. También funciona con VoiceOver." : {
 
     },
     "Permitir notificaciones" : {
@@ -368,6 +404,19 @@
     "Posición" : {
 
     },
+    "Posición %lld: %@, %lld puntos" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Posición %1$lld: %2$@, %3$lld puntos"
+          }
+        }
+      }
+    },
+    "Pregunta: %@" : {
+
+    },
     "Pregúntale a Buddy…" : {
 
     },
@@ -376,6 +425,16 @@
     },
     "Procesamiento en el dispositivo" : {
 
+    },
+    "Progreso del test: pregunta %lld de %lld, %@ completo" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Progreso del test: pregunta %1$lld de %2$lld, %3$@ completo"
+          }
+        }
+      }
     },
     "Puede equivocarse" : {
 
@@ -403,16 +462,6 @@
     },
     "Responsable del tratamiento" : {
 
-    },
-    "Respuesta %lld de 5: %@" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Respuesta %1$lld de 5: %2$@"
-          }
-        }
-      }
     },
     "Respuestas generadas por IA" : {
 
@@ -444,6 +493,15 @@
     "Tip diario de fortalezas" : {
 
     },
+    "Toca para abrir la historia completa." : {
+
+    },
+    "Toca para responder con %@" : {
+
+    },
+    "Toca para ver los detalles de esta fortaleza." : {
+
+    },
     "Todo el procesamiento de Lumina ocurre en tu dispositivo. Ningún dato personal sale de tu iPhone o iPad." : {
 
     },
@@ -454,6 +512,9 @@
 
     },
     "Tu análisis te espera" : {
+
+    },
+    "Tú dijiste: %@" : {
 
     },
     "Tu dispositivo no soporta Apple Intelligence, así que no puedo generar el análisis personalizado. Tus resultados siguen disponibles." : {
@@ -467,6 +528,16 @@
     },
     "Tu puntaje" : {
 
+    },
+    "Tu puntaje en %@: %lld de %lld" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tu puntaje en %1$@: %2$lld de %3$lld"
+          }
+        }
+      }
     },
     "Tu top %lld a lo largo del tiempo" : {
 

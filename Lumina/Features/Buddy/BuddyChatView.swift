@@ -41,6 +41,7 @@ struct BuddyChatView: View {
                         Image(systemName: "list.bullet")
                             .foregroundStyle(Theme.accent)
                     }
+                    .accessibilityLabel("Conversaciones anteriores")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -51,6 +52,7 @@ struct BuddyChatView: View {
                         Image(systemName: "square.and.pencil")
                             .foregroundStyle(Theme.accent)
                     }
+                    .accessibilityLabel("Nueva conversación")
                 }
             }
             .sheet(isPresented: $showConversationList) {
@@ -220,6 +222,7 @@ struct BuddyChatView: View {
             .buttonStyle(.plain)
             .disabled(!isSendEnabled)
             .animation(Theme.AnimationStyle.snappy, value: isSendEnabled)
+            .accessibilityLabel("Enviar mensaje")
         }
         .padding(.horizontal, Theme.spacingL)
         .padding(.vertical, Theme.spacingM)

@@ -28,4 +28,7 @@ extension Logger {
 
     /// Home Screen Quick Actions routing.
     static let quickActions = Logger(subsystem: subsystem, category: "QuickActions")
+
+    /// Accessibility: read-aloud / TTS pipeline.
+    static let accessibility = Logger(subsystem: subsystem, category: "Accessibility")
 }

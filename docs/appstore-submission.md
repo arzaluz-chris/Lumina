@@ -11,7 +11,14 @@ manualmente en App Store Connect antes de enviar a revisión.
 - [x] **Privacy manifest** (`Lumina/PrivacyInfo.xcprivacy`): 0 tracking, 0
       datos recolectados, Required Reason APIs declarados (UserDefaults
       CA92.1, FileTimestamp C617.1).
-- [x] **Purpose strings**: `NSPhotoLibraryUsageDescription` presente.
+- [x] **Purpose strings**: ninguno requerido. La app usa `PhotosPicker`
+      (sandboxed) para fotos — no requiere
+      `NSPhotoLibraryUsageDescription`. TTS es output-only
+      (`AVSpeechSynthesizer`), no accede al micrófono.
+- [x] **Accesibilidad**: VoiceOver labels en controles clave,
+      botones "Leer en voz alta" en Test / Resultados / Historias /
+      Onboarding / Buddy, auto-lectura de preguntas en el Test
+      (Ajustes → Accesibilidad).
 - [x] **Export compliance**: `ITSAppUsesNonExemptEncryption = NO`.
 - [x] **Catálogo de strings** (`Lumina/Localizable.xcstrings`) con
       `SWIFT_EMIT_LOC_STRINGS = YES` y
@@ -81,6 +88,9 @@ manualmente en App Store Connect antes de enviar a revisión.
       obligatorio al primer uso + banda permanente "Respuestas
       generadas por IA. Pueden equivocarse." + aclaración "no
       sustituye valoración de un profesional" explícita.
+- **1.5 Developer Information / 2.3 Accurate Metadata**: créditos en
+      Ajustes → Acerca de, vigencia del aviso de privacidad y correo
+      de contacto en la pantalla "Aviso de privacidad".
 
 ## Verificación manual sugerida antes de archivar
 

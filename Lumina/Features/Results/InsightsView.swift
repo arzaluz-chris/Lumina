@@ -148,6 +148,8 @@ struct InsightsView: View {
                     .font(Theme.bodyFont)
                     .foregroundStyle(Theme.primaryText)
                     .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                ReadAloudButton(text: insight.summary, size: .small)
             }
         }
 
@@ -178,11 +180,15 @@ struct InsightsView: View {
             tint: Theme.danger
         )
         CardContainer {
-            Text(insight.encouragement)
-                .font(Theme.bodyFont)
-                .italic()
-                .foregroundStyle(Theme.primaryText)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .top, spacing: Theme.spacingM) {
+                Text(insight.encouragement)
+                    .font(Theme.bodyFont)
+                    .italic()
+                    .foregroundStyle(Theme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                ReadAloudButton(text: insight.encouragement, tint: Theme.danger, size: .small)
+            }
         }
 
         LuminaSecondaryButton(title: "Regenerar análisis", systemImage: "arrow.clockwise") {

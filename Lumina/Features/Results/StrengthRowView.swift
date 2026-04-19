@@ -61,5 +61,8 @@ struct StrengthRowView: View {
                 animatedFill = fill
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Posición \(rank): \(strength.nameES), \(points) puntos")
+        .accessibilityHint("Toca para ver los detalles de esta fortaleza.")
     }
 }

@@ -21,6 +21,11 @@ struct QuestionCardView: View {
     @State private var cardScale: Double = 1
     @State private var hoveredValue: Int?
 
+    /// When ON (default), the question text is read aloud automatically
+    /// as soon as the card appears — key affordance for kids and
+    /// pre-readers. Controlled from Settings → Accesibilidad.
+    @AppStorage("quizAutoReadEnabled") private var autoReadEnabled: Bool = true
+
     // Horizontal drag geometry. Each `stepWidth` of horizontal
     // translation advances the hovered Likert value by one step from the
     // neutral midpoint (3). Once the user has dragged past
@@ -44,12 +49,20 @@ struct QuestionCardView: View {
                         .offset(y: -32)
                 }
 
-            Text(question.textES)
-                .font(Theme.subheadFont)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Theme.primaryText)
-                .padding(.horizontal, Theme.spacingL)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(alignment: .center, spacing: Theme.spacingM) {
+                Text(question.textES)
+                    .font(Theme.subheadFont)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(Theme.primaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity)
+
+                ReadAloudButton(text: question.textES, tint: virtueColor)
+                    .accessibilityHidden(false)
+            }
+            .padding(.horizontal, Theme.spacingL)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Pregunta: \(question.textES)")
 
             Spacer(minLength: 0)
 
@@ -66,6 +79,20 @@ struct QuestionCardView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .sensoryFeedback(.impact(weight: .light), trigger: hoveredValue)
+        // Using `.task(id:)` means the narration is retriggered for each
+        // new question *and* naturally cancelled when the view is torn
+        // down — without fighting the insertion/removal transition, which
+        // was cutting speech mid-word when the old card's `.onDisappear`
+        // fired after the new card's utterance had already started.
+        // Stopping playback on quiz exit is owned by ``QuizFlowView``.
+        .task(id: question.id) {
+            guard autoReadEnabled else { return }
+            // Small delay so the card-entrance spring settles before the
+            // voice begins.
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            guard !Task.isCancelled else { return }
+            SpeechService.shared.speak(question.textES)
+        }
     }
 
     // A soft elevated card behind the bear gives a visual handle the
@@ -102,6 +129,10 @@ struct QuestionCardView: View {
             .scaleEffect(cardScale)
             .opacity(cardOpacity)
             .gesture(dragGesture)
+            // The draggable sticker is purely decorative for VoiceOver
+            // users — they should use the five Likert pills below, which
+            // expose the same answer values as tap targets.
+            .accessibilityHidden(true)
     }
 
     // Floating colored callout that appears above the card while the

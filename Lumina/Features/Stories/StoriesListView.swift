@@ -32,6 +32,7 @@ struct StoriesListView: View {
                         Label("Nueva historia", systemImage: "plus.circle.fill")
                             .foregroundStyle(Theme.accent)
                     }
+                    .accessibilityLabel("Nueva historia")
                 }
             }
             .sheet(isPresented: $isPresentingEditor) {
@@ -135,6 +136,18 @@ private struct StoryRow: View {
                 thumbnail = PhotoStore.loadImage(filename: filename)
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint("Toca para abrir la historia completa.")
+    }
+
+    private var accessibilityLabel: String {
+        let strengthName = strength?.nameES ?? "Historia"
+        let preview = story.body.isEmpty
+            ? "Sin descripción"
+            : String(story.body.prefix(120))
+        let date = story.createdAt.formatted(date: .long, time: .shortened)
+        return "Historia de \(strengthName). \(preview). \(date)"
     }
 
     @ViewBuilder

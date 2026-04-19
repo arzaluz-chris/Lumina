@@ -11,6 +11,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                AccessibilitySection()
                 AIPersonalitySection()
                 NotificationsSection()
                 DataSection()

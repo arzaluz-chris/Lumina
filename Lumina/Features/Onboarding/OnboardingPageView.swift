@@ -70,6 +70,9 @@ struct OnboardingPageView: View {
                         .offset(y: textAppeared ? 0 : 10)
                         .frame(maxWidth: .infinity)
 
+                    ReadAloudButton(text: "\(title). \(subtitle)", tint: accent, size: .small)
+                        .opacity(textAppeared ? 1.0 : 0)
+
                     if !features.isEmpty {
                         VStack(alignment: .leading, spacing: Theme.spacingM) {
                             ForEach(Array(features.enumerated()), id: \.offset) { index, feature in

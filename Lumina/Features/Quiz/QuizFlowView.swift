@@ -65,6 +65,14 @@ struct QuizFlowView: View {
         .background(Theme.heroGradient.ignoresSafeArea())
         .sensoryFeedback(.success, trigger: state.isComplete)
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: state.currentIndex)
+        .onDisappear {
+            // When the user leaves the quiz entirely (finishes or backs
+            // out), make sure no narration keeps playing in the
+            // background. Per-question narration is owned by
+            // ``QuestionCardView`` via `.task(id:)` and handles its own
+            // cancellation between questions.
+            SpeechService.shared.stop()
+        }
     }
 
     private var progressHeader: some View {
@@ -84,6 +92,8 @@ struct QuizFlowView: View {
             }
             LuminaProgressBar(progress: state.progress, height: 10)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Progreso del test: pregunta \(min(state.currentIndex + 1, state.shuffledQuestions.count)) de \(state.shuffledQuestions.count), \(progressPercentString) completo")
     }
 
     private var progressPercentString: String {
