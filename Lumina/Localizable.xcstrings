@@ -1,7 +1,524 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    " " : {
 
+    },
+    "¡Ya completaste tu test!" : {
+
+    },
+    "¿Cómo respondo?" : {
+
+    },
+    "¿Eliminar esta historia?" : {
+
+    },
+    "¿Eliminar todos los datos?" : {
+
+    },
+    "¿Recuerdas este momento?" : {
+
+    },
+    "/ %lld" : {
+
+    },
+    "#%lld" : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld pts" : {
+
+    },
+    "%lld tests · gráficas interactivas" : {
+
+    },
+    "%lld tests completados desde el %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld tests completados desde el %2$@."
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+
+    },
+    "+%lld" : {
+
+    },
+    "Acerca de" : {
+
+    },
+    "Activa Apple Intelligence en Ajustes para recibir tu análisis personalizado." : {
+
+    },
+    "Activa Apple Intelligence en los ajustes de tu dispositivo para desbloquear el análisis personalizado y Buddy." : {
+
+    },
+    "Activa las notificaciones para recibir tips, recuerdos y recordatorios." : {
+
+    },
+    "actual" : {
+
+    },
+    "Agregar foto" : {
+
+    },
+    "Ajustes" : {
+
+    },
+    "Algunas funciones de IA no están disponibles en este dispositivo." : {
+
+    },
+    "Análisis" : {
+
+    },
+    "Analítica" : {
+
+    },
+    "Analizando tu evolución…" : {
+
+    },
+    "Antes de comenzar" : {
+
+    },
+    "Apple Intelligence" : {
+
+    },
+    "Apple Intelligence está activa" : {
+
+    },
+    "Apple Intelligence no disponible" : {
+
+    },
+    "Apple Intelligence no está disponible en este momento." : {
+
+    },
+    "Apple Intelligence se está preparando. Inténtalo de nuevo en unos minutos." : {
+
+    },
+    "Apple Intelligence se está preparando. Podrás usar el análisis y Buddy cuando esté lista." : {
+
+    },
+    "Aviso de privacidad" : {
+
+    },
+    "Bases científicas" : {
+
+    },
+    "Buddy" : {
+
+    },
+    "Buddy no es psicólogo, médico ni orientador. Úsalo como compañero de reflexión; para decisiones importantes busca a un experto de confianza." : {
+
+    },
+    "Buddy puede equivocarse" : {
+
+    },
+    "Buddy usa Apple Intelligence en tu dispositivo para escribir respuestas a partir de tus fortalezas. Nada se envía a un servidor." : {
+
+    },
+    "Cálida" : {
+
+    },
+    "Cambiar foto" : {
+
+    },
+    "Cambio total" : {
+
+    },
+    "Cambios a este aviso" : {
+
+    },
+    "Cambios desde tu test anterior" : {
+
+    },
+    "Cancelar" : {
+
+    },
+    "Cerrar" : {
+
+    },
+    "Colegio Walden Dos de México" : {
+
+    },
+    "Colegio Walden Dos de México (Walden Dos), con domicilio en México, es el responsable de la aplicación Lumina. Puedes contactarnos en %@." : {
+
+    },
+    "Cómo has cambiado" : {
+
+    },
+    "Como toda IA, Buddy puede decir cosas imprecisas o salirse del tema. Cuestiona sus respuestas y contrástalas si algo te hace ruido." : {
+
+    },
+    "Concisa" : {
+
+    },
+    "Consistencia de tu top 5" : {
+
+    },
+    "Contacto" : {
+
+    },
+    "Conversaciones" : {
+
+    },
+    "Corta" : {
+
+    },
+    "Créditos" : {
+
+    },
+    "Cualquier duda sobre privacidad o tratamiento de datos: %@." : {
+
+    },
+    "Cuando adjuntas una foto a una historia, la guardamos dentro del contenedor privado de la aplicación. Nunca se envía fuera de tu dispositivo. Al borrar la historia, la foto se elimina del almacenamiento de la app." : {
+
+    },
+    "Cuanto más arriba, mejor posición: #1 es la fortaleza más expresada en cada test." : {
+
+    },
+    "Datos" : {
+
+    },
+    "Descubre tus fortalezas" : {
+
+    },
+    "Descubre tus fortalezas de carácter" : {
+
+    },
+    "Eliminar" : {
+
+    },
+    "Eliminar los datos borra tus resultados, historias y conversaciones de forma permanente." : {
+
+    },
+    "Eliminar todo" : {
+
+    },
+    "Eliminar todos los datos" : {
+
+    },
+    "Entendido" : {
+
+    },
+    "Esta acción no se puede deshacer. Se borrarán tus resultados, historias y conversaciones." : {
+
+    },
+    "Estás en una etapa de transición de fortalezas." : {
+
+    },
+    "Esto toma unos segundos." : {
+
+    },
+    "Estos ajustes definen cómo Buddy responde a tus preguntas. Los cambios aplican en la siguiente conversación." : {
+
+    },
+    "Evolución" : {
+
+    },
+    "Fecha" : {
+
+    },
+    "Fecha y hora" : {
+
+    },
+    "Fortaleza" : {
+
+    },
+    "Fortaleza VIA" : {
+
+    },
+    "Foto (opcional)" : {
+
+    },
+    "Fotos" : {
+
+    },
+    "Generado en tu dispositivo" : {
+
+    },
+    "Generando reflexión…" : {
+
+    },
+    "Generando tu análisis…" : {
+
+    },
+    "Guardar" : {
+
+    },
+    "Hablar con Buddy" : {
+
+    },
+    "Hacer el test" : {
+
+    },
+    "Hay cambios visibles pero tu núcleo se mantiene." : {
+
+    },
+    "Hecha por Daniela Fuentes Cabrera y Diana Jiménez." : {
+
+    },
+    "Historias" : {
+
+    },
+    "Hola, soy Buddy" : {
+
+    },
+    "Hoy hace un año…" : {
+
+    },
+    "Larga" : {
+
+    },
+    "Las respuestas de análisis, las reflexiones diarias y las conversaciones con Buddy se generan con Apple Intelligence y el framework Foundation Models, que se ejecutan completamente en tu iPhone o iPad. Apple no recibe ni almacena estos datos; nosotros tampoco." : {
+
+    },
+    "Legal y fuentes" : {
+
+    },
+    "Longitud de respuestas" : {
+
+    },
+    "Los recuerdos te avisan del aniversario de tus historias y de momentos pasados, como hace Fotos." : {
+
+    },
+    "Lumina" : {
+
+    },
+    "Lumina es utilizada por estudiantes y familias del Colegio Walden Dos de México. La app no requiere crear cuenta y no recoge información personal identificable. Recomendamos que niñas y niños usen la app con acompañamiento de un adulto responsable." : {
+
+    },
+    "Lumina funciona mejor con Apple Intelligence activado." : {
+
+    },
+    "Lumina no está afiliada al VIA Institute on Character. Esta app usa la clasificación de fortalezas de carácter con fines educativos." : {
+
+    },
+    "Lumina se apoya en la clasificación VIA de fortalezas de carácter, desarrollada por la Dra. Nansook Park, Christopher Peterson y Martin E. P. Seligman. Las referencias que siguen son las principales fuentes utilizadas para la estructura del test y los textos explicativos." : {
+
+    },
+    "Lumina se construye para acompañarte en el descubrimiento de tus fortalezas de carácter, no para recolectar información sobre ti." : {
+
+    },
+    "Lumina usa Apple Intelligence en tu dispositivo para generar un análisis personalizado y conversar con Buddy. Todo queda en tu iPhone." : {
+
+    },
+    "Máx %lld" : {
+
+    },
+    "Máximo" : {
+
+    },
+    "Media" : {
+
+    },
+    "Menores de edad" : {
+
+    },
+    "Mínimo" : {
+
+    },
+    "Mis 24" : {
+
+    },
+    "Motivadora" : {
+
+    },
+    "Necesitas al menos dos tests para ver la tendencia." : {
+
+    },
+    "Ninguno. Lumina no envía a servidores propios ni de terceros tus respuestas al test, tus historias, tus conversaciones con Buddy ni tus fotos. Todo queda dentro del sandbox de la app en tu dispositivo." : {
+
+    },
+    "No se pudo generar el análisis" : {
+
+    },
+    "No se pudo generar el análisis en este momento." : {
+
+    },
+    "No sustituye a un profesional" : {
+
+    },
+    "Notificaciones" : {
+
+    },
+    "Notificaciones locales" : {
+
+    },
+    "Nueva" : {
+
+    },
+    "Nueva historia" : {
+
+    },
+    "Otra sugerencia" : {
+
+    },
+    "Permitir notificaciones" : {
+
+    },
+    "Personalidad de Buddy" : {
+
+    },
+    "Posición" : {
+
+    },
+    "Pregúntale a Buddy…" : {
+
+    },
+    "Pregúntame sobre tus fortalezas o cómo aplicarlas en tu día." : {
+
+    },
+    "Procesamiento en el dispositivo" : {
+
+    },
+    "Puede equivocarse" : {
+
+    },
+    "Puedes borrar todos tus datos en cualquier momento desde Ajustes → Datos → Borrar todo. En términos de la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (México), conservas los derechos ARCO (acceso, rectificación, cancelación y oposición). Como no almacenamos tus datos fuera de tu dispositivo, puedes ejercer cancelación y oposición borrando la app o usando la opción anterior." : {
+
+    },
+    "Puntos" : {
+
+    },
+    "Qué datos recolectamos" : {
+
+    },
+    "Recordatorio de re-test (30 días)" : {
+
+    },
+    "Recordatorio semanal de historias" : {
+
+    },
+    "Recuerdos de historias" : {
+
+    },
+    "Referencias" : {
+
+    },
+    "Responsable del tratamiento" : {
+
+    },
+    "Respuesta %lld de 5: %@" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Respuesta %1$lld de 5: %2$@"
+          }
+        }
+      }
+    },
+    "Respuestas generadas por IA" : {
+
+    },
+    "Respuestas generadas por IA. Pueden equivocarse." : {
+
+    },
+    "Si las activas, Lumina programa recordatorios (tips diarios, aniversarios de historias, re-test) usando el sistema de notificaciones locales de iOS. La decisión de entregarlas la toma tu dispositivo; no hay servidores de push involucrados." : {
+
+    },
+    "Si modificamos este aviso, actualizaremos la fecha de vigencia al inicio del documento y comunicaremos el cambio en la siguiente actualización de la app." : {
+
+    },
+    "Siguiente" : {
+
+    },
+    "Sugiéreme una historia" : {
+
+    },
+    "Te enseño — es súper fácil" : {
+
+    },
+    "Tendencia por fortaleza" : {
+
+    },
+    "Test" : {
+
+    },
+    "Tip diario de fortalezas" : {
+
+    },
+    "Todo el procesamiento de Lumina ocurre en tu dispositivo. Ningún dato personal sale de tu iPhone o iPad." : {
+
+    },
+    "Tono" : {
+
+    },
+    "Tu análisis personalizado" : {
+
+    },
+    "Tu análisis te espera" : {
+
+    },
+    "Tu dispositivo no soporta Apple Intelligence, así que no puedo generar el análisis personalizado. Tus resultados siguen disponibles." : {
+
+    },
+    "Tu historia" : {
+
+    },
+    "Tu privacidad" : {
+
+    },
+    "Tu puntaje" : {
+
+    },
+    "Tu top %lld a lo largo del tiempo" : {
+
+    },
+    "Tus derechos" : {
+
+    },
+    "tus fortalezas" : {
+
+    },
+    "Tus fortalezas signature son muy consistentes." : {
+
+    },
+    "Tus preguntas y respuestas se quedan en tu dispositivo. Puedes borrarlas en cualquier momento desde la lista de conversaciones." : {
+
+    },
+    "Tus puntajes son iguales a tu test anterior." : {
+
+    },
+    "Tus resultados siguen visibles en Mis 24." : {
+
+    },
+    "Una historia que guardaste sobre %@." : {
+
+    },
+    "Úsalo como punto de partida para tu reflexión, no como una fuente definitiva." : {
+
+    },
+    "Usamos Apple Intelligence en tu dispositivo para redactar una lectura basada en tus respuestas. Ningún dato sale de tu iPhone." : {
+
+    },
+    "Ver de nuevo" : {
+
+    },
+    "Ver evolución" : {
+
+    },
+    "Ver mis fortalezas" : {
+
+    },
+    "Versión" : {
+
+    },
+    "Vigente desde el %@." : {
+
+    },
+    "Vuelve a hacer el test para ver cómo se mueve tu top %lld." : {
+
+    },
+    "Δ" : {
+
+    }
   },
   "version" : "1.0"
 }

@@ -25,7 +25,7 @@ struct AboutSection: View {
                 Label("Créditos", systemImage: "info.circle.fill")
                     .font(Theme.subheadFont)
                     .foregroundStyle(Theme.gold)
-                Text("Hecho por Colegio Walden Dos de México.")
+                Text("Hecha por Daniela Fuentes Cabrera y Diana Jiménez.")
                     .font(Theme.captionFont)
                     .foregroundStyle(Theme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)

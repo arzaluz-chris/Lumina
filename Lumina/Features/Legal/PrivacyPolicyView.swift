@@ -9,7 +9,7 @@ import SwiftUI
 /// them aligned avoids review friction.
 struct PrivacyPolicyView: View {
     private static let effectiveDate: String = "18 de abril de 2026"
-    private static let contactEmail: String = "privacidad@waldendos.edu.mx"
+    private static let contactEmail: String = "eduardogarcia@waldendos.edu.mx"
 
     var body: some View {
         ScrollView {
