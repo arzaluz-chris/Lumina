@@ -27,6 +27,7 @@ final class SpeechService: NSObject {
     private(set) var isSpeaking: Bool = false
 
     private static let enabledKey = "readAloudEnabled"
+    private static let voiceIDKey = "preferredVoiceID"
 
     /// Master switch. When false, ``speak(_:id:)`` is a no-op and
     /// Read Aloud buttons render in a dimmed/disabled state.
@@ -40,6 +41,24 @@ final class SpeechService: NSObject {
             if !newValue { stop() }
         }
     }
+
+    /// User-chosen voice identifier. `nil` means "auto" — the service
+    /// picks the highest-quality Spanish voice installed on the device.
+    /// Stored in `UserDefaults` so the choice survives relaunches.
+    var selectedVoiceID: String? {
+        get { voiceIDBacking }
+        set {
+            voiceIDBacking = newValue
+            if let newValue {
+                UserDefaults.standard.set(newValue, forKey: SpeechService.voiceIDKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: SpeechService.voiceIDKey)
+            }
+        }
+    }
+
+    @ObservationIgnored
+    private var voiceIDBacking: String? = UserDefaults.standard.string(forKey: SpeechService.voiceIDKey)
 
     override private init() {
         super.init()
@@ -77,7 +96,7 @@ final class SpeechService: NSObject {
         guard !trimmed.isEmpty else { return }
         stop()
         let utterance = AVSpeechUtterance(string: trimmed)
-        utterance.voice = Self.preferredVoice
+        utterance.voice = activeVoice
         // Slightly slower than system default — the app targets kids and
         // early readers, and a relaxed cadence is much easier to follow.
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.92
@@ -103,16 +122,61 @@ final class SpeechService: NSObject {
         isSpeaking && currentUtteranceID == id
     }
 
-    /// Picks the best available Spanish voice. Falls back through
-    /// `es-MX → es-US → es-ES → any Spanish` so the app sounds local in
-    /// México (the primary audience) but still speaks if only a generic
-    /// Spanish voice is installed on the device.
-    private static let preferredVoice: AVSpeechSynthesisVoice? = {
-        if let v = AVSpeechSynthesisVoice(language: "es-MX") { return v }
-        if let v = AVSpeechSynthesisVoice(language: "es-US") { return v }
-        if let v = AVSpeechSynthesisVoice(language: "es-ES") { return v }
-        return AVSpeechSynthesisVoice.speechVoices().first { $0.language.hasPrefix("es") }
-    }()
+    /// The voice that will be used at the next ``speak(_:id:)`` call.
+    /// Honors the user's manual pick if it's still installed; otherwise
+    /// falls back to the auto-selected best Spanish voice.
+    var activeVoice: AVSpeechSynthesisVoice? {
+        if let id = selectedVoiceID, let voice = AVSpeechSynthesisVoice(identifier: id) {
+            return voice
+        }
+        return Self.bestSpanishVoice()
+    }
+
+    /// All Spanish voices currently installed on the device, sorted by
+    /// quality (Premium → Enhanced → Default), then by language so
+    /// `es-MX` voices appear first for our México-based audience.
+    /// Used by the settings picker.
+    static func availableSpanishVoices() -> [AVSpeechSynthesisVoice] {
+        AVSpeechSynthesisVoice.speechVoices()
+            .filter { $0.language.hasPrefix("es") }
+            .sorted { lhs, rhs in
+                if lhs.quality.rawValue != rhs.quality.rawValue {
+                    return lhs.quality.rawValue > rhs.quality.rawValue
+                }
+                if lhs.language != rhs.language {
+                    return Self.languagePriority(lhs.language) < Self.languagePriority(rhs.language)
+                }
+                return lhs.name.localizedCompare(rhs.name) == .orderedAscending
+            }
+    }
+
+    /// Picks the best available Spanish voice when the user hasn't
+    /// chosen one explicitly. Walks Premium → Enhanced → Default for
+    /// `es-MX` first (the primary audience), then `es-US`, then `es-ES`,
+    /// then any other Spanish locale. Falls back to the system default
+    /// if no Spanish voice is installed at all.
+    private static func bestSpanishVoice() -> AVSpeechSynthesisVoice? {
+        let voices = availableSpanishVoices()
+        let qualities: [AVSpeechSynthesisVoiceQuality] = [.premium, .enhanced, .default]
+        let locales = ["es-MX", "es-US", "es-ES"]
+        for locale in locales {
+            for quality in qualities {
+                if let match = voices.first(where: { $0.language == locale && $0.quality == quality }) {
+                    return match
+                }
+            }
+        }
+        return voices.first ?? AVSpeechSynthesisVoice(language: "es-MX")
+    }
+
+    private static func languagePriority(_ language: String) -> Int {
+        switch language {
+        case "es-MX": 0
+        case "es-US": 1
+        case "es-ES": 2
+        default:      3
+        }
+    }
 }
 
 extension SpeechService: AVSpeechSynthesizerDelegate {

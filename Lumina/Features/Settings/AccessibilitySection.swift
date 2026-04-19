@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 /// Settings section grouping the read-aloud / VoiceOver-complementary
 /// toggles. Added 2026-04-18 so kids, pre-readers, and anyone who prefers
@@ -31,12 +32,36 @@ struct AccessibilitySection: View {
                 Label("Leer preguntas del test automáticamente", systemImage: "text.bubble.fill")
             }
             .disabled(!readAloudEnabled)
+
+            NavigationLink {
+                VoicePickerView()
+            } label: {
+                HStack {
+                    Label("Voz", systemImage: "person.wave.2.fill")
+                    Spacer()
+                    Text(currentVoiceLabel)
+                        .font(.caption)
+                        .foregroundStyle(Theme.secondaryText)
+                        .lineLimit(1)
+                }
+            }
+            .disabled(!readAloudEnabled)
         } header: {
             Label("Accesibilidad", systemImage: "figure.wave.circle.fill")
                 .foregroundStyle(Theme.VirtueCategory.humanity.color)
         } footer: {
             Text("Para niños y personas que aún no leen: Lumina puede leer en voz alta las preguntas, historias y respuestas de Buddy. También funciona con VoiceOver.")
         }
+    }
+
+    /// The trailing text on the "Voz" row. Mirrors what the user will see
+    /// inside the picker so the section gives a quick read of the current
+    /// state without drilling in.
+    private var currentVoiceLabel: String {
+        if SpeechService.shared.selectedVoiceID == nil {
+            return "Automática"
+        }
+        return SpeechService.shared.activeVoice?.name ?? "Automática"
     }
 }
 
