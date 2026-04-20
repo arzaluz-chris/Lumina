@@ -114,10 +114,25 @@ final class ScreenshotTests: XCTestCase {
 
     // MARK: - Helpers
 
+    /// Tabs live in `app.tabBars` on iPhone (bottom bar) but on iPadOS 26
+    /// they're a floating pill. The floating pill nests a Button inside
+    /// another Button (cell-in-view), so a plain `app.buttons[label]`
+    /// query matches twice and XCTest refuses to tap. `firstMatch`
+    /// forces the outer one.
     private func tapTab(_ label: String) {
-        let tab = app.tabBars.buttons[label]
-        if tab.waitForExistence(timeout: 5) {
-            tab.tap()
+        let bottom = app.tabBars.buttons[label].firstMatch
+        if bottom.waitForExistence(timeout: 2) {
+            bottom.tap()
+            return
+        }
+        let any = app.buttons.matching(identifier: label).firstMatch
+        if any.waitForExistence(timeout: 3) {
+            any.tap()
+            return
+        }
+        let fallback = app.buttons[label].firstMatch
+        if fallback.waitForExistence(timeout: 3) {
+            fallback.tap()
         }
     }
 

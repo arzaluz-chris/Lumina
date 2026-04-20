@@ -1,31 +1,57 @@
 #!/usr/bin/env bash
 # Runs the automated App Store screenshot capture for Lumina.
 #
-# Boots an iPhone 15 Pro Max simulator, pins the status bar to 9:41
-# with full signal, Wi-Fi and battery, invokes the LuminaUITests
-# screenshot suite, then extracts every screenshot attachment out of
-# the xcresult bundle as PNGs in `fastlane/screenshots/es-MX/`.
+# Boots a simulator, pins the status bar to 9:41 with full signal /
+# Wi-Fi / battery, invokes the LuminaUITests screenshot suite, then
+# extracts every screenshot attachment out of the xcresult bundle
+# as PNGs under `fastlane/screenshots/<device>/es-MX/`.
 #
 # Usage:
-#   ./scripts/run_screenshots.sh
+#   ./scripts/run_screenshots.sh                 # defaults to iphone
+#   ./scripts/run_screenshots.sh --device ipad   # iPad mini
+#   ./scripts/run_screenshots.sh --device iphone
 #
 # Requirements:
-#   - Xcode 26 with iPhone 15 Pro Max device type installed.
-#   - iOS 26.x runtime installed.
+#   - Xcode 26 with the target device type + iOS 26.x runtime installed.
 
 set -euo pipefail
+
+DEVICE="iphone"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --device) DEVICE="$2"; shift 2 ;;
+    *) echo "Unknown arg: $1"; exit 2 ;;
+  esac
+done
+
+case "$DEVICE" in
+  iphone)
+    SIM_NAME="Lumina-iPhone15ProMax"
+    DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro-Max"
+    OUT_SUBDIR="iPhone15ProMax"
+    ;;
+  ipad)
+    SIM_NAME="Lumina-iPadMini"
+    DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro"
+    OUT_SUBDIR="iPadMini"
+    ;;
+  *)
+    echo "Unsupported device: $DEVICE (expected: iphone | ipad)"
+    exit 2
+    ;;
+esac
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT="$PROJECT_ROOT/Lumina.xcodeproj"
 SCHEME="Lumina"
-SIM_NAME="Lumina-iPhone15ProMax"
-DEVICE_TYPE="com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro-Max"
-OUT_DIR="$PROJECT_ROOT/fastlane/screenshots/es-MX"
-XCRESULT="$PROJECT_ROOT/build/LuminaUITests.xcresult"
+OUT_DIR="$PROJECT_ROOT/fastlane/screenshots/$OUT_SUBDIR/es-MX"
+XCRESULT="$PROJECT_ROOT/build/LuminaUITests-$OUT_SUBDIR.xcresult"
 DERIVED="$PROJECT_ROOT/build/DerivedData"
 
 mkdir -p "$OUT_DIR"
 mkdir -p "$PROJECT_ROOT/build"
+
+echo "› Device: $DEVICE ($DEVICE_TYPE)"
 
 # ---------------------------------------------------------------------
 # 1. Pick the newest installed iOS runtime.
@@ -55,6 +81,8 @@ echo "› Simulator booted"
 
 # ---------------------------------------------------------------------
 # 4. Pin the status bar: 9:41, full signal, charged.
+#    On iPad the cellular fields are ignored for Wi-Fi-only models —
+#    passing them is still harmless.
 # ---------------------------------------------------------------------
 xcrun simctl status_bar "$SIM_UDID" override \
   --time "9:41" \
@@ -72,7 +100,7 @@ echo "› Status bar pinned"
 # 5. Wipe any previous xcresult + run tests.
 # ---------------------------------------------------------------------
 rm -rf "$XCRESULT"
-echo "› Running UI tests (this takes ~2 min)"
+echo "› Running UI tests (~2 min)"
 set +e
 xcodebuild test \
   -project "$PROJECT" \
