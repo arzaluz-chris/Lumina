@@ -21,10 +21,20 @@ struct LuminaApp: App {
 
     init() { }
 
+    /// Chooses the insights provider at launch. In screenshot mode the
+    /// Foundation Models provider is swapped for the deterministic mock
+    /// so the "Mis 24" analysis screen renders in the simulator too.
+    private var insightsProvider: any AIInsightsProviding {
+        #if DEBUG
+        if ScreenshotMode.isActive { return MockInsightsProvider() }
+        #endif
+        return FoundationModelsInsightsProvider()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
-                .environment(\.aiInsightsProvider, FoundationModelsInsightsProvider())
+                .environment(\.aiInsightsProvider, insightsProvider)
                 .task {
                     // Re-arm Story reminders on every launch. A cheap
                     // no-op when the user hasn't enabled the feature;

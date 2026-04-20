@@ -74,6 +74,16 @@ struct BuddyChatView: View {
             }
             .task(id: results.first?.id) {
                 chatState.configure(modelContext: modelContext)
+                #if DEBUG
+                // In screenshot mode we want the tab to open directly on a
+                // populated conversation so the capture shows real dialogue.
+                if ScreenshotMode.isActive,
+                   chatState.currentConversation == nil,
+                   let recent = mostRecentSeededConversation() {
+                    chatState.loadConversation(recent)
+                    return
+                }
+                #endif
                 let snapshot = results.first?.snapshot()
                 chatState.start(with: snapshot, force: true)
             }
@@ -244,4 +254,17 @@ struct BuddyChatView: View {
             message: "Activa Apple Intelligence en Ajustes para chatear con Buddy. Esta función funciona completamente en tu dispositivo, sin enviar datos a ningún servidor."
         )
     }
+
+    #if DEBUG
+    /// Screenshot-mode helper: returns the most recently updated seeded
+    /// conversation with at least one message, or `nil` if the store is
+    /// empty. Lets the Buddy tab open straight into populated dialogue.
+    private func mostRecentSeededConversation() -> Conversation? {
+        let descriptor = FetchDescriptor<Conversation>(
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        guard let all = try? modelContext.fetch(descriptor) else { return nil }
+        return all.first(where: { !$0.messages.isEmpty })
+    }
+    #endif
 }

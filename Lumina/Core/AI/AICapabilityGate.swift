@@ -39,6 +39,7 @@ final class AICapabilityGate {
 
     /// True when we can open a `LanguageModelSession` right now.
     var isAvailable: Bool {
+        if ScreenshotMode.isActive { return true }
         if case .available = availability { return true }
         return false
     }
@@ -47,6 +48,7 @@ final class AICapabilityGate {
     /// hardware). We use this to fully hide AI-only UI so those users
     /// aren't nagged with "upgrade your phone" CTAs they can't act on.
     var shouldHideAIEntirely: Bool {
+        if ScreenshotMode.isActive { return false }
         if case .unavailable(.deviceNotEligible) = availability { return true }
         return false
     }

@@ -15,12 +15,21 @@ final class LuminaBuddyChatService {
     }
 
     var isAvailable: Bool {
+        if ScreenshotMode.isActive { return true }
         if case .available = model.availability { return true }
         return false
     }
 
     func startSession(with snapshot: TestSnapshot?, tone: String = "calida", length: String = "media") {
         turnCount = 0
+
+        // In screenshot mode the real Foundation Models session is
+        // unreachable (simulator). Skip creation entirely — the UI
+        // renders seeded conversations without ever streaming a reply.
+        if ScreenshotMode.isActive {
+            session = nil
+            return
+        }
 
         let contextLine: String
         if let snapshot, !snapshot.rankedEntries.isEmpty {

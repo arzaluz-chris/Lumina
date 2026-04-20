@@ -17,6 +17,9 @@ struct SettingsView: View {
                 DataSection()
                 LegalSection()
                 AboutSection()
+                #if DEBUG
+                ScreenshotSection()
+                #endif
             }
             .navigationTitle("Ajustes")
             .navigationBarTitleDisplayMode(.large)
