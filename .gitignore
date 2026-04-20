@@ -1,1 +1,5 @@
 .claude/worktrees/suspicious-vaughan/
+
+# Screenshot automation outputs
+/build/
+/fastlane/screenshots/

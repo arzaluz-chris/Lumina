@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		B97CDDF02F8B296B008DDBC8 /* Lumina.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Lumina.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB0000000000000000000001 /* LuminaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LuminaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -16,10 +17,22 @@
 			path = Lumina;
 			sourceTree = "<group>";
 		};
+		AB0000000000000000000002 /* LuminaUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LuminaUITests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		B97CDDED2F8B296B008DDBC8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0000000000000000000006 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -33,6 +46,7 @@
 			isa = PBXGroup;
 			children = (
 				B97CDDF22F8B296B008DDBC8 /* Lumina */,
+				AB0000000000000000000002 /* LuminaUITests */,
 				B97CDDF12F8B296B008DDBC8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +55,7 @@
 			isa = PBXGroup;
 			children = (
 				B97CDDF02F8B296B008DDBC8 /* Lumina.app */,
+				AB0000000000000000000001 /* LuminaUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +85,29 @@
 			productReference = B97CDDF02F8B296B008DDBC8 /* Lumina.app */;
 			productType = "com.apple.product-type.application";
 		};
+		AB0000000000000000000003 /* LuminaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB000000000000000000000B /* Build configuration list for PBXNativeTarget "LuminaUITests" */;
+			buildPhases = (
+				AB0000000000000000000008 /* Sources */,
+				AB0000000000000000000006 /* Frameworks */,
+				AB0000000000000000000007 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AB0000000000000000000005 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000002 /* LuminaUITests */,
+			);
+			name = LuminaUITests;
+			packageProductDependencies = (
+			);
+			productName = LuminaUITests;
+			productReference = AB0000000000000000000001 /* LuminaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +120,10 @@
 				TargetAttributes = {
 					B97CDDEF2F8B296B008DDBC8 = {
 						CreatedOnToolsVersion = 26.4;
+					};
+					AB0000000000000000000003 = {
+						CreatedOnToolsVersion = 26.4;
+						TestTargetID = B97CDDEF2F8B296B008DDBC8;
 					};
 				};
 			};
@@ -100,12 +142,38 @@
 			projectRoot = "";
 			targets = (
 				B97CDDEF2F8B296B008DDBC8 /* Lumina */,
+				AB0000000000000000000003 /* LuminaUITests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXContainerItemProxy section */
+		AB0000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B97CDDE82F8B296B008DDBC8 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B97CDDEF2F8B296B008DDBC8;
+			remoteInfo = Lumina;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		AB0000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B97CDDEF2F8B296B008DDBC8 /* Lumina */;
+			targetProxy = AB0000000000000000000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXResourcesBuildPhase section */
 		B97CDDEE2F8B296B008DDBC8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0000000000000000000007 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -116,6 +184,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		B97CDDEC2F8B296B008DDBC8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AB0000000000000000000008 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -316,6 +391,52 @@
 			};
 			name = Release;
 		};
+		AB0000000000000000000009 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5Z75CJC22Q;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.eduardo-garcia.Lumina.UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lumina;
+			};
+			name = Debug;
+		};
+		AB000000000000000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5Z75CJC22Q;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.eduardo-garcia.Lumina.UITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Lumina;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -333,6 +454,15 @@
 			buildConfigurations = (
 				B97CDDFC2F8B296E008DDBC8 /* Debug */,
 				B97CDDFD2F8B296E008DDBC8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AB000000000000000000000B /* Build configuration list for PBXNativeTarget "LuminaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AB0000000000000000000009 /* Debug */,
+				AB000000000000000000000A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

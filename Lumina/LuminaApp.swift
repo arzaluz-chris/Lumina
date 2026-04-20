@@ -19,7 +19,19 @@ struct LuminaApp: App {
     /// the correct tab on both cold and warm launch.
     @UIApplicationDelegateAdaptor(LuminaAppDelegate.self) private var appDelegate
 
-    init() { }
+    init() {
+        #if DEBUG
+        // When launched by the automated screenshot runner, wipe and
+        // re-seed the SwiftData store before any view mounts — that way
+        // `@Query` picks up the seeded content on first render and the
+        // UI test doesn't have to navigate into Settings.
+        if CommandLine.arguments.contains("-ScreenshotMode"),
+           CommandLine.arguments.contains("-SeedOnLaunch") {
+            UserDefaults.standard.set(true, forKey: ScreenshotMode.storageKey)
+            ScreenshotSeeder.seed(container: container)
+        }
+        #endif
+    }
 
     /// Chooses the insights provider at launch. In screenshot mode the
     /// Foundation Models provider is swapped for the deterministic mock
