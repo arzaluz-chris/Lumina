@@ -1,1 +1,10 @@
 .claude/worktrees/suspicious-vaughan/
+
+# Internal docs — App Store submission notes, private planning.
+docs/
+
+# Xcode / Fastlane build artifacts.
+build/
+fastlane/
+DerivedData/
+*.xcresult
