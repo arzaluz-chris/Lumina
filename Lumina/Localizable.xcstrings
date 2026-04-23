@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "es",
   "strings" : {
+    "" : {
+
+    },
     " " : {
 
     },
@@ -10,6 +13,9 @@
     "¿Cómo respondo?" : {
 
     },
+    "¿Eliminar conversación?" : {
+
+    },
     "¿Eliminar esta historia?" : {
 
     },
@@ -17,6 +23,9 @@
 
     },
     "¿Recuerdas este momento?" : {
+
+    },
+    "\"%@\" se borrará de forma permanente. Esta acción no se puede deshacer." : {
 
     },
     "/ %lld" : {
@@ -51,6 +60,12 @@
 
     },
     "+%lld" : {
+
+    },
+    "Abre la fuente en Safari" : {
+
+    },
+    "Abre las referencias científicas" : {
 
     },
     "Accesibilidad" : {
@@ -113,6 +128,9 @@
     "Aviso de privacidad" : {
 
     },
+    "Basada en VIA" : {
+
+    },
     "Bases científicas" : {
 
     },
@@ -173,6 +191,12 @@
     "Contacto" : {
 
     },
+    "Contenido generado con IA. No sustituye asesoría profesional." : {
+
+    },
+    "Contenido generado por IA" : {
+
+    },
     "Conversaciones" : {
 
     },
@@ -201,6 +225,9 @@
 
     },
     "Detener lectura" : {
+
+    },
+    "El análisis personalizado, la reflexión del día y las respuestas de Buddy se generan con Apple Intelligence en tu dispositivo. Como toda IA, puede equivocarse; úsala como punto de partida para tu reflexión, no como fuente definitiva." : {
 
     },
     "Eliminar" : {
@@ -254,6 +281,9 @@
     "Fotos" : {
 
     },
+    "Fuentes científicas citadas" : {
+
+    },
     "Generado en tu dispositivo" : {
 
     },
@@ -285,6 +315,9 @@
 
     },
     "Hoy hace un año…" : {
+
+    },
+    "La estructura de 24 fortalezas es la clasificación de Peterson y Seligman (2004) desarrollada por el VIA Institute on Character. Lumina no está afiliada al VIA Institute; el uso es educativo." : {
 
     },
     "La función \"Leer en voz alta\" reproduce preguntas, historias y respuestas con la voz del sistema (AVSpeechSynthesizer). Todo el proceso ocurre en tu dispositivo: Lumina no enciende el micrófono, no graba audio y no envía texto a ningún servidor. Puedes desactivar la función en Ajustes → Accesibilidad." : {
@@ -320,6 +353,12 @@
     "Lumina" : {
 
     },
+    "Lumina es una app de autoconocimiento para explorar las 24 fortalezas de carácter de la clasificación VIA. Está pensada para estudiantes, familias y docentes del Colegio Walden Dos de México." : {
+
+    },
+    "Lumina es una herramienta educativa; no ofrece diagnóstico ni consejo médico. Todo el procesamiento ocurre en tu dispositivo." : {
+
+    },
     "Lumina es utilizada por estudiantes y familias del Colegio Walden Dos de México. La app no requiere crear cuenta y no recoge información personal identificable. Recomendamos que niñas y niños usen la app con acompañamiento de un adulto responsable." : {
 
     },
@@ -329,13 +368,22 @@
     "Lumina no está afiliada al VIA Institute on Character. Esta app usa la clasificación de fortalezas de carácter con fines educativos." : {
 
     },
-    "Lumina se apoya en la clasificación VIA de fortalezas de carácter, desarrollada por la Dra. Nansook Park, Christopher Peterson y Martin E. P. Seligman. Las referencias que siguen son las principales fuentes utilizadas para la estructura del test y los textos explicativos." : {
+    "Lumina no ofrece diagnóstico, tratamiento ni consejo médico o psicológico. Para decisiones relacionadas con tu salud mental o la de alguien a tu cuidado, consulta a un profesional calificado." : {
+
+    },
+    "Lumina se apoya en la clasificación VIA de fortalezas de carácter, desarrollada por la Dra. Nansook Park, Christopher Peterson y Martin E. P. Seligman. Tocá cualquier enlace para abrir la fuente en Safari." : {
 
     },
     "Lumina se construye para acompañarte en el descubrimiento de tus fortalezas de carácter, no para recolectar información sobre ti." : {
 
     },
     "Lumina usa Apple Intelligence en tu dispositivo para generar un análisis personalizado y conversar con Buddy. Todo queda en tu iPhone." : {
+
+    },
+    "Más acciones" : {
+
+    },
+    "Más investigación: viacharacter.org/research" : {
 
     },
     "Máx %lld" : {
@@ -363,6 +411,9 @@
 
     },
     "Ninguno. Lumina no envía a servidores propios ni de terceros tus respuestas al test, tus historias, tus conversaciones con Buddy ni tus fotos. Todo queda dentro del sandbox de la app en tu dispositivo." : {
+
+    },
+    "No es diagnóstico ni terapia" : {
 
     },
     "No se pudo generar el análisis" : {
@@ -454,6 +505,9 @@
     "Qué datos recolectamos" : {
 
     },
+    "Qué datos usa Lumina" : {
+
+    },
     "Recordatorio de re-test (30 días)" : {
 
     },
@@ -472,7 +526,16 @@
     "Respuestas generadas por IA" : {
 
     },
+    "Respuestas generadas por IA. No sustituye a un profesional." : {
+
+    },
     "Respuestas generadas por IA. Pueden equivocarse." : {
+
+    },
+    "Saber más" : {
+
+    },
+    "Si estás en una situación de crisis o necesitas atención urgente, contacta a un profesional de la salud o a un servicio de emergencia de tu país." : {
 
     },
     "Si las activas, Lumina programa recordatorios (tips diarios, aniversarios de historias, re-test) usando el sistema de notificaciones locales de iOS. La decisión de entregarlas la toma tu dispositivo; no hay servidores de push involucrados." : {
@@ -482,6 +545,9 @@
 
     },
     "Siguiente" : {
+
+    },
+    "Sobre esta app" : {
 
     },
     "Sugiéreme una historia" : {
@@ -506,9 +572,6 @@
 
     },
     "Toca para ver los detalles de esta fortaleza." : {
-
-    },
-    "Todo el procesamiento de Lumina ocurre en tu dispositivo. Ningún dato personal sale de tu iPhone o iPad." : {
 
     },
     "Tono" : {
@@ -548,6 +611,9 @@
     "Tu top %lld a lo largo del tiempo" : {
 
     },
+    "Tus datos no salen de tu dispositivo" : {
+
+    },
     "Tus derechos" : {
 
     },
@@ -563,7 +629,13 @@
     "Tus puntajes son iguales a tu test anterior." : {
 
     },
+    "Tus respuestas, historias y conversaciones se procesan y guardan localmente. No hay cuentas, servidores ni analíticas." : {
+
+    },
     "Tus resultados siguen visibles en Mis 24." : {
+
+    },
+    "Una herramienta educativa" : {
 
     },
     "Una historia que guardaste sobre %@." : {
@@ -582,6 +654,9 @@
 
     },
     "Ver mis fortalezas" : {
+
+    },
+    "Ver referencias" : {
 
     },
     "Versión" : {

@@ -18,10 +18,10 @@ final class QuickActionsHandler: ObservableObject {
     /// Kept in sync with the `UIApplicationShortcutItems` array in the
     /// project's generated Info.plist.
     enum Action: String, CaseIterable {
-        case test    = "com.waldendos.lumina.shortcut.test"
-        case buddy   = "com.waldendos.lumina.shortcut.buddy"
-        case story   = "com.waldendos.lumina.shortcut.story"
-        case results = "com.waldendos.lumina.shortcut.results"
+        case test    = "com.eduardo-garcia.Lumina.shortcut.test"
+        case buddy   = "com.eduardo-garcia.Lumina.shortcut.buddy"
+        case story   = "com.eduardo-garcia.Lumina.shortcut.story"
+        case results = "com.eduardo-garcia.Lumina.shortcut.results"
     }
 
     /// Stream of actions triggered by Quick Actions. Hot; values only

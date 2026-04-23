@@ -15,6 +15,7 @@ struct OnboardingFlowView: View {
     private var pages: [OnboardingPage] {
         var result: [OnboardingPage] = [
             .welcome,
+            .nature,
             .quiz,
             .strengths,
         ]
@@ -39,6 +40,7 @@ struct OnboardingFlowView: View {
         guard currentPage < pages.count else { return Theme.accent }
         switch pages[currentPage] {
         case .welcome:             return Theme.accent
+        case .nature:              return Theme.lavender
         case .quiz:                return Theme.VirtueCategory.wisdom.color
         case .strengths:           return Theme.VirtueCategory.humanity.color
         case .appleIntelligence:   return Theme.VirtueCategory.transcendence.color
@@ -75,6 +77,10 @@ struct OnboardingFlowView: View {
             }
         }
         .sensoryFeedback(.selection, trigger: currentPage)
+        // Onboarding pages use large display fonts (hero wordmark, big
+        // rounded titles) that are fixed by design. Cap Dynamic Type so
+        // AX4/AX5 don't overflow the card or push the CTA off-screen.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 
     // MARK: - Page Indicators
@@ -100,6 +106,18 @@ struct OnboardingFlowView: View {
                 bearAsset: "bear_07",
                 title: "Lumina",
                 subtitle: "Descubre tus fortalezas de carácter y aprende a integrarlas en tu vida diaria."
+            )
+
+        case .nature:
+            OnboardingPageView(
+                bearAsset: "bear_15",
+                title: "Uso educativo",
+                subtitle: "Para explorar tus fortalezas, no para diagnosticar.",
+                features: [
+                    (icon: "stethoscope", title: "No sustituye al profesional", description: "Para temas de salud, consulta a un experto."),
+                    (icon: "sparkles", title: "Basada en VIA", description: "Clasificación de Peterson y Seligman, con fines educativos."),
+                ],
+                accentOverride: Theme.lavender
             )
 
         case .quiz:
@@ -267,6 +285,7 @@ struct OnboardingFlowView: View {
 
 private enum OnboardingPage {
     case welcome
+    case nature
     case quiz
     case strengths
     case appleIntelligence(SystemLanguageModel.Availability)

@@ -65,6 +65,11 @@ struct QuizFlowView: View {
         .background(Theme.heroGradient.ignoresSafeArea())
         .sensoryFeedback(.success, trigger: state.isComplete)
         .animation(.spring(response: 0.45, dampingFraction: 0.85), value: state.currentIndex)
+        // The Likert pill row uses fixed 24pt digits and 11pt labels so
+        // the five-pill row stays horizontally balanced. Cap Dynamic Type
+        // to keep the card + pills layout stable at accessibility sizes;
+        // narration remains available for users who need larger reading.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
         .onDisappear {
             // When the user leaves the quiz entirely (finishes or backs
             // out), make sure no narration keeps playing in the

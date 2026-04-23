@@ -36,8 +36,10 @@ struct InsightsView: View {
                     unavailable(reason: reason)
                 } else if isGenerating {
                     loadingCard
+                    AIDisclaimerBanner()
                 } else {
                     idleCard
+                    AIDisclaimerBanner()
                 }
 
                 if let error {
@@ -195,6 +197,9 @@ struct InsightsView: View {
             Task { await generate(force: true) }
         }
         .padding(.top, Theme.spacingS)
+
+        AIDisclaimerBanner()
+            .padding(.top, Theme.spacingS)
     }
 
     private func sectionTitle(_ text: String, subtitle: String?, icon: String, tint: Color) -> some View {

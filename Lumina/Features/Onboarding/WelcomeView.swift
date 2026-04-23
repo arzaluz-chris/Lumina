@@ -58,6 +58,9 @@ struct WelcomeView: View {
             }
             .padding(Theme.spacingL)
         }
+        // Hero wordmark uses a fixed 52pt display size. Cap Dynamic Type
+        // so the layout stays readable at the largest accessibility sizes.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 }
 

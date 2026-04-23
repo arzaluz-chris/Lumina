@@ -64,6 +64,9 @@ struct BuddyChatView: View {
                         chatState.startNewConversation()
                         let snapshot = results.first?.snapshot()
                         chatState.start(with: snapshot, force: true)
+                    },
+                    onDelete: { conversation in
+                        chatState.handleDeletedConversation(conversation)
                     }
                 )
             }
@@ -75,7 +78,12 @@ struct BuddyChatView: View {
             .task(id: results.first?.id) {
                 chatState.configure(modelContext: modelContext)
                 let snapshot = results.first?.snapshot()
-                chatState.start(with: snapshot, force: true)
+                // No force: `hasStarted` guards against re-entry. Without
+                // this guard, every @Query emission during initial load
+                // (or every tab remount) created a fresh empty Conversation
+                // in SwiftData — the history filled with "Nueva conversación"
+                // rows the user never opened.
+                chatState.start(with: snapshot)
             }
             .onAppear {
                 // One-time, first-run disclaimer. Only surface it on
@@ -130,8 +138,29 @@ struct BuddyChatView: View {
                 .padding(.vertical, Theme.spacingS)
             }
 
+            // Persistent AI disclaimer right above the input bar so it
+            // stays visible once the welcome hero is gone (Guideline 1.4.1).
+            persistentDisclaimerCaption
+
             inputBar
         }
+    }
+
+    private var persistentDisclaimerCaption: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "sparkles")
+                .font(.caption2.weight(.semibold))
+            Text("Respuestas generadas por IA. No sustituye a un profesional.")
+                .font(.caption2)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+        }
+        .foregroundStyle(Theme.secondaryText)
+        .padding(.horizontal, Theme.spacingL)
+        .padding(.top, Theme.spacingXS)
+        .padding(.bottom, 2)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
     }
 
     private var welcomeHero: some View {

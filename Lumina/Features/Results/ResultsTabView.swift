@@ -268,6 +268,8 @@ private struct DailyReflectionCard: View {
                         .font(Theme.bodyFont)
                         .foregroundStyle(Theme.primaryText)
                         .fixedSize(horizontal: false, vertical: true)
+
+                    AIDisclaimerBanner()
                 }
             }
         } else if isLoading {

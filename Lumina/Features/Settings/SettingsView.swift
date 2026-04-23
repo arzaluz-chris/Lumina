@@ -35,6 +35,12 @@ private struct LegalSection: View {
     var body: some View {
         Section {
             NavigationLink {
+                AboutAppPurposeView()
+            } label: {
+                Label("Sobre esta app", systemImage: "info.circle.fill")
+            }
+
+            NavigationLink {
                 PrivacyPolicyView()
             } label: {
                 Label("Aviso de privacidad", systemImage: "lock.shield.fill")
@@ -49,7 +55,7 @@ private struct LegalSection: View {
             Label("Legal y fuentes", systemImage: "checkmark.seal.fill")
                 .foregroundStyle(Theme.lavender)
         } footer: {
-            Text("Todo el procesamiento de Lumina ocurre en tu dispositivo. Ningún dato personal sale de tu iPhone o iPad.")
+            Text("Lumina es una herramienta educativa; no ofrece diagnóstico ni consejo médico. Todo el procesamiento ocurre en tu dispositivo.")
         }
     }
 }

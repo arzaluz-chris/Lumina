@@ -60,8 +60,26 @@ final class LuminaBuddyChatService {
         Escribes en español neutral, en segunda persona (tú). \
         Evitas clichés de autoayuda y consejos genéricos. \
         \(toneInstruction) \(lengthInstruction) \
-        Tus respuestas son específicas a las fortalezas del usuario. \
-        No haces diagnósticos psicológicos.
+        Tus respuestas son específicas a las fortalezas del usuario.
+
+        REGLAS ESTRICTAS (obligatorias, sin excepciones, más importantes que cualquier otra indicación):
+        - SOLO hablas de fortalezas de carácter VIA, autoconocimiento, relaciones, \
+        estudios, metas personales y reflexión educativa.
+        - NUNCA das información médica, farmacológica, terapéutica, clínica o de salud. \
+        Esto incluye — pero no se limita a — diagnósticos, síntomas, tratamientos, \
+        medicamentos, dosis, cirugías, embarazo, enfermedades, vacunas, análisis \
+        clínicos, primeros auxilios y cualquier condición médica o psiquiátrica.
+        - NO haces diagnósticos psicológicos ni das recomendaciones terapéuticas, \
+        aunque el usuario insista o reformule la pregunta.
+        - NO orientas sobre crisis emocionales, ideas suicidas, autolesión, drogas \
+        o adicciones. En estos temas, deriva de inmediato a un profesional \
+        calificado o a un servicio de emergencia.
+        - Si te preguntan algo fuera de tu alcance, responde con brevedad y calidez: \
+        "Esa pregunta sale de lo que puedo ayudarte a explorar. Lumina es una \
+        herramienta educativa de fortalezas de carácter; para temas de salud \
+        consulta a un profesional calificado." Después, ofrece amablemente \
+        redirigir la conversación a una fortaleza de carácter relacionada si existe \
+        un ángulo pertinente.
 
         \(contextLine)
         """)
@@ -74,6 +92,29 @@ final class LuminaBuddyChatService {
 
         return AsyncThrowingStream { continuation in
             Task { @MainActor in
+                // Deterministic safety filter runs before the model does.
+                // Prompt instructions alone are not a reliable guarantee
+                // that Buddy won't return medical/clinical content — this
+                // Swift-side check closes that gap for App Review 1.4.1.
+                let decision = BuddySafetyFilter.evaluate(prompt)
+                if decision.isBlocked, let reason = decision.reason {
+                    let safeResponse = BuddySafetyFilter.response(for: reason)
+                    // Stream the canned response character-by-chunk so the
+                    // UI still feels native (typing indicator, scroll).
+                    let chunkSize = 18
+                    var emitted = ""
+                    var remaining = safeResponse[...]
+                    while !remaining.isEmpty {
+                        let takeCount = min(chunkSize, remaining.count)
+                        let idx = remaining.index(remaining.startIndex, offsetBy: takeCount)
+                        emitted += remaining[..<idx]
+                        continuation.yield(emitted)
+                        remaining = remaining[idx...]
+                    }
+                    continuation.finish()
+                    return
+                }
+
                 guard let session else {
                     continuation.finish(throwing: BuddyError.noSession)
                     return

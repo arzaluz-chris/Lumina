@@ -39,6 +39,9 @@ struct StrengthDetailView: View {
                 animatedFill = fill
             }
         }
+        // Score badge uses a fixed 48pt numeric glyph; cap Dynamic Type
+        // so the hero band + score card stay within the viewport at AX5.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility3)
     }
 
     // MARK: - Hero band

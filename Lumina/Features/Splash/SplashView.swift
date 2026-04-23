@@ -76,6 +76,9 @@ struct SplashView: View {
                 }
             }
         }
+        // The 58pt brand wordmark is a fixed display size by design. Cap
+        // Dynamic Type so AX5 doesn't push it beyond the safe area.
+        .dynamicTypeSize(...DynamicTypeSize.accessibility2)
     }
 }
 

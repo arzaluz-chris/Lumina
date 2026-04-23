@@ -61,6 +61,12 @@ struct ReadAloudButton: View {
                     Circle().stroke(tint.opacity(service.isEnabled ? 0.28 : 0.14), lineWidth: 1)
                 )
                 .contentTransition(.symbolEffect(.replace))
+                // HIG minimum tap target is 44×44pt. For the `.small` visual
+                // size (32pt), we expand the hit area transparently so kids
+                // with imprecise taps — and everyone else — reliably hit the
+                // button without enlarging the glyph itself.
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .disabled(!service.isEnabled || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

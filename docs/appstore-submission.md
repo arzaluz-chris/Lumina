@@ -5,6 +5,7 @@ manualmente en App Store Connect antes de enviar a revisión.
 
 ## Ya resuelto en código
 
+- [x] **App Icon 1024×1024 PNG RGB opaco** (`Assets.xcassets/AppIcon.appiconset/AppIcon.png`), con variantes Dark y Tinted.
 - [x] **iOS 26 deployment target** (`IPHONEOS_DEPLOYMENT_TARGET = 26.0`).
 - [x] **Universal** (`TARGETED_DEVICE_FAMILY = "1,2"`). iPhone + iPad.
 - [x] **Orientaciones iPad**: portrait, portrait-upside-down, landscape L/R.
@@ -18,7 +19,12 @@ manualmente en App Store Connect antes de enviar a revisión.
 - [x] **Accesibilidad**: VoiceOver labels en controles clave,
       botones "Leer en voz alta" en Test / Resultados / Historias /
       Onboarding / Buddy, auto-lectura de preguntas en el Test
-      (Ajustes → Accesibilidad).
+      (Ajustes → Accesibilidad). Tap targets ≥ 44pt garantizados
+      (incluido el `ReadAloudButton.small`, que expande el hit area
+      sin agrandar el glifo). Dynamic Type con tope razonable en
+      pantallas con tipografía de despliegue fija (splash,
+      onboarding, quiz, detalle de fortaleza) para evitar roturas
+      en AX5.
 - [x] **Export compliance**: `ITSAppUsesNonExemptEncryption = NO`.
 - [x] **Catálogo de strings** (`Lumina/Localizable.xcstrings`) con
       `SWIFT_EMIT_LOC_STRINGS = YES` y
@@ -29,7 +35,16 @@ manualmente en App Store Connect antes de enviar a revisión.
       y las tarjetas AI se ocultan en dispositivos no elegibles
       (`AICapabilityGate.shouldHideAIEntirely`).
 - [x] **Aviso de privacidad in-app** (Ajustes → Aviso de privacidad).
-- [x] **Referencias bibliográficas in-app** (Ajustes → Referencias).
+- [x] **Referencias bibliográficas in-app** con URLs tocables a las
+      fuentes (VIA Institute, DOI del paper de Park et al. 2004, OUP,
+      Hogrefe). Ajustes → Referencias.
+- [x] **"Sobre esta app"** (Ajustes → Sobre esta app): disclaimer
+      educativo explícito + enlaces directos a Referencias y Aviso de
+      privacidad.
+- [x] **Onboarding con paso "Una herramienta educativa"** que establece
+      propósito no-diagnóstico antes del test.
+- [x] **Disclaimer visible en cada superficie IA** (Análisis
+      personalizado, Reflexión del día): banda que enlaza a Referencias.
 - [x] **Buddy disclaimer** al primer uso con advertencia explícita de IA.
 - [x] **Quick Actions** (test, Buddy, nueva historia, resultados).
 - [x] **Review prompt** tras 5+ acciones significativas, una vez por
@@ -39,19 +54,26 @@ manualmente en App Store Connect antes de enviar a revisión.
 
 ## Queda para App Store Connect / diseño
 
-- [ ] **App Icon 1024×1024**. El asset catalog ya tiene el slot
-      (`AppIcon`); sube la PNG final.
 - [ ] **Capturas de pantalla** iPhone 6.9" y 5.5", iPad 13" y 12.9":
       Test, Resultados top-3, Evolución, Buddy, Historias, Ajustes.
       Todas en español.
 - [ ] **Nombre de la app**: Lumina.
-- [ ] **Subtítulo** (máx. 30 car.): "Descubre tus 24 fortalezas".
-- [ ] **Descripción**: resalta Apple Intelligence on-device, privacidad,
-      VIA Character Strengths, Colegio Walden Dos de México.
-- [ ] **Keywords**: fortalezas, VIA, carácter, bienestar, psicología
-      positiva, Walden, coaching, reflexión, estudiante, escuela.
-- [ ] **Categoría**: Salud y forma física (primaria). Educación
-      (secundaria) opcional.
+- [ ] **Subtítulo** (máx. 30 car.): "Explora tus 24 fortalezas".
+- [ ] **Descripción**: herramienta educativa basada en VIA Character
+      Strengths; resalta Apple Intelligence on-device, privacidad
+      total y uso escolar. **Debe terminar con el disclaimer**:
+      > "Aviso importante. Lumina es una herramienta educativa. No
+      > ofrece diagnóstico, tratamiento ni consejo médico o
+      > psicológico. Consulta siempre a un profesional de la salud
+      > antes de tomar decisiones sobre tu bienestar o el de un menor
+      > bajo tu cuidado."
+- [ ] **Keywords**: fortalezas, VIA, educación, carácter, psicología
+      positiva, Walden, reflexión, estudiante, escuela, familia.
+- [ ] **Categoría**: **Educación (primaria)**. Estilo de vida
+      (secundaria) opcional. Coincide con
+      `INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.education`.
+- [ ] **Made for Kids / Kids Category**: **desmarcado**. La app no está
+      diseñada para niños de 11 años o menos (Guideline 1.3).
 - [ ] **Age rating**: 4+.
 - [ ] **URL de soporte**: página del colegio.
 - [ ] **URL de política de privacidad**: apuntar a una copia pública
@@ -60,15 +82,46 @@ manualmente en App Store Connect antes de enviar a revisión.
       - Data Not Collected → Sí.
       - Data Used to Track You → No.
 - [ ] **Review notes** para el revisor (en la sección Notes):
-      > Lumina es una app de fortalezas de carácter (VIA) para el
-      > Colegio Walden Dos de México. Todo el procesamiento de IA
-      > ocurre en el dispositivo vía Foundation Models (iOS 26). El
-      > revisor puede probar Buddy y los insights en un dispositivo
-      > con Apple Intelligence habilitado (iPhone 15 Pro o superior).
-      > En dispositivos sin Apple Intelligence, la pestaña Buddy y
-      > las tarjetas AI no aparecen — esto es comportamiento esperado.
+      > Lumina es una **app educativa** de fortalezas de carácter (VIA)
+      > para el Colegio Walden Dos de México. Público objetivo:
+      > adolescentes, adultos jóvenes, familias y docentes. **No está
+      > dirigida a menores de 11** y no solicita la categoría Kids.
+      >
+      > La app no ofrece diagnóstico, tratamiento ni consejo médico o
+      > psicológico. No tenemos ni requerimos regulatory clearance
+      > porque no se hacen afirmaciones médicas. El disclaimer aparece:
+      > (1) al final de la descripción en App Store, (2) en un paso
+      > dedicado del onboarding ("Una herramienta educativa"), (3) en
+      > Ajustes → "Sobre esta app", y (4) en una banda visible debajo
+      > de cada tarjeta con contenido generado por IA (análisis
+      > personalizado, reflexión del día, chat Buddy).
+      >
+      > Todas las referencias bibliográficas (Peterson & Seligman 2004,
+      > Niemiec 2018, Park et al. 2004, VIA Institute, Skinner 1948)
+      > están en Ajustes → Referencias, con enlaces tocables a la
+      > fuente. Cada banda de IA tiene un acceso directo a esa
+      > pantalla.
+      >
+      > Todo el procesamiento de IA ocurre en el dispositivo vía
+      > Foundation Models (iOS 26). El revisor puede probar Buddy y
+      > los insights en un dispositivo con Apple Intelligence habilitado
+      > (iPhone 15 Pro o superior). En dispositivos sin Apple
+      > Intelligence, la pestaña Buddy y las tarjetas AI no aparecen —
+      > comportamiento esperado.
+      >
+      > La app usa `AVSpeechSynthesizer` con `AVAudioSession`
+      > `.playback + .duckOthers` para la función opcional "Leer en
+      > voz alta" (accesibilidad / Dynamic Type). Esto permite que la
+      > narración se oiga aunque el dispositivo esté en silencio. No
+      > hay reproducción en segundo plano y la narración se detiene al
+      > salir de la pantalla. Se puede desactivar en Ajustes →
+      > Accesibilidad.
 - [ ] **Demo account**: no requerido (la app no tiene login).
 - [ ] **TestFlight build** antes de enviar a revisión.
+- [ ] **Reply al reviewer** en Resolution Center: ver
+      `.claude/plans/spicy-foraging-plum.md` sección 3 para el borrador
+      bilingüe (ES + EN) punto por punto contra los tres hallazgos de la
+      submission 1b55ff81.
 
 ## Guidelines Apple tocados explícitamente
 

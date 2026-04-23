@@ -28,7 +28,7 @@ enum QuestionsCatalog {
         Question(id: 15, textES: "Se me da bien motivar a un grupo para lograr un objetivo común.",            strengthID: "liderazgo",           bearAsset: "bear_15"),
         Question(id: 16, textES: "Puedo ver el panorama general de las cosas sin perderme en detalles.",       strengthID: "perspectiva",         bearAsset: "bear_16"),
         Question(id: 17, textES: "Cuando empiezo una tarea difícil no descanso hasta terminarla.",             strengthID: "perseverancia",       bearAsset: "bear_17"),
-        Question(id: 18, textES: "No guardo rencor, prefiero sanar las relaciones.",                           strengthID: "perdon",              bearAsset: "bear_18"),
+        Question(id: 18, textES: "No guardo rencor, prefiero reparar las relaciones.",                         strengthID: "perdon",              bearAsset: "bear_18"),
         Question(id: 19, textES: "Siento una conexión profunda con el resto de los seres humanos.",            strengthID: "humanidad",           bearAsset: "bear_19"),
         Question(id: 20, textES: "Hago mi parte del trabajo con entusiasmo para no fallar a los demás.",       strengthID: "trabajo_equipo",      bearAsset: "bear_20"),
         Question(id: 21, textES: "Me aseguro de que todos tengan las mismas oportunidades en un grupo.",       strengthID: "justicia",            bearAsset: "bear_21"),
